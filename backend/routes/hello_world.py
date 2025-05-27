@@ -5,6 +5,10 @@ class HelloWorld(Resource):
     def get(self):
         """Handle GET requests to return a hello world message."""
         return HelloWorldService.get_hello_world()
+        
+    def post(self):
+        """Handle POST requests to create a hello world message."""
+        return HelloWorldService.create_hello_world()
     
 def registerHelloWorldRoutes(api):
     api.add_resource(HelloWorld, '/hello')
