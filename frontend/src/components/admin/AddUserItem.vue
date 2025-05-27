@@ -2,7 +2,6 @@
 import { ref } from 'vue';
 import { useStudentStore } from '@/store/StudentStore';
 import { useRouter } from 'vue-router';
-import apiCluster from '../../../api/api';
 
 const router = useRouter();
 const studentStore = useStudentStore();
