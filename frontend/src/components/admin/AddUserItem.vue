@@ -11,16 +11,8 @@ const role = ref('student');
 
 async function addUser() {
     if (role.value === 'student') {
-        try {
-            // Utilisation directe de l'API
-            const response = await apiCluster.post('students', { email: email.value });
-            console.log('Étudiant ajouté:', response.data);
-            
-            // Redirection vers la page admin
-            router.push('/admin');
-        } catch (error) {
-            console.error("Erreur:", error);
-        }
+        studentStore.addStudent(email.value)
+        router.push('/admin');
     } else {
         console.log('Ajout de professeur non implémenté');
     }
