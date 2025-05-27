@@ -1,11 +1,13 @@
 <script setup>
-import Temp from './components/Temp.vue';
+import NavBar from './components/NavBar.vue';
 </script>
 
 <template>
   <header>
   </header>
   <main>
-    <Temp />
+    <NavBar />
+    <router-view />
   </main>
+  <RouterLink to="/admin">See admin page</RouterLink>
 </template>

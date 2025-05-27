@@ -1,0 +1,6 @@
+@import './base.css';
+
+html{
+    background-color: --var(--background-color);
+    color: var(--text-color);
+}
