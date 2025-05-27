@@ -25,10 +25,10 @@ function goToHome() {
             <button @click="goToHome">Home</button>
         </li>
         <li>
-            <button @click="goToLogin">Go to Login</button>
+            <button @click="goToLogin">Login</button>
         </li>
         <li>
-            <button @click="goToSignup">Go to Signup</button>
+            <button @click="goToSignup">Signup</button>
         </li>
       </ul>
     </nav>
