@@ -11,4 +11,5 @@ import NavBar from './components/NavBar.vue';
   </main>
   <RouterLink to="/admin">See admin page</RouterLink>
   <RouterLink to="/teacher">See teacher dashboard</RouterLink>
+  <RouterLink to="/student">See student dashboard</RouterLink>
 </template>

@@ -14,15 +14,13 @@ function goToSignup() {
 function goToHome() {
     router.push({ name: 'home' });
 }
-
 </script>
 
 <template>
-    <nav> 
-      <ul>
-        <h1> Clustering de camarades </h1>
+    <nav>
+      <ul class="navbar">
         <li>
-            <button @click="goToHome">Home</button>
+          <a href="#" class="navbar-title" @click.prevent="goToHome">Clustering de camarades</a>
         </li>
         <li>
             <button @click="goToLogin">Login</button>
@@ -33,3 +31,22 @@ function goToHome() {
       </ul>
     </nav>
 </template>
+
+<style scoped>
+.navbar {
+  display: flex;
+  align-items: center;
+  list-style: none;
+  padding: 0;
+  gap: 1rem;
+}
+
+.navbar-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  margin-right: 2rem;
+}
+</style>
