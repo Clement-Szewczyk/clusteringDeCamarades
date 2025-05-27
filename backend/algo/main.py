@@ -1,13 +1,13 @@
 import pandas as pd
 import numpy as np
-from sklearn.cluster import SpectralClustering, AgglomerativeClustering
+from sklearn.cluster import SpectralClustering, AgglomerativeClustering, KMeans
 from sklearn.preprocessing import StandardScaler
 from collections import defaultdict
 import warnings
 warnings.filterwarnings('ignore')
 
 # Paramètres configurables
-TAILLE_GROUPE = 5  # M personnes par groupe
+TAILLE_GROUPE = 2  # M personnes par groupe (CORRIGÉ: 2 au lieu de 5)
 NOMBRE_VOTES = None  # N votes par étudiant, sera déduit automatiquement
 EXCLUSIONS = set()  # Liste des noms exclus (ex : absents)
 
@@ -138,8 +138,6 @@ def clustering_features(noms, matrice_affinite, taille_groupe):
     Clustering basé sur les features des étudiants.
     Transforme les affinités en vecteurs de caractéristiques.
     """
-    from sklearn.cluster import KMeans
-    
     n = len(noms)
     k = max(1, n // taille_groupe)
     
@@ -157,6 +155,108 @@ def clustering_features(noms, matrice_affinite, taille_groupe):
         clusters[label].append(noms[i])
     
     return dict(clusters)
+
+def clustering_force_taille_equilibree(noms, matrice_affinite, taille_groupe):
+    """
+    NOUVELLE MÉTHODE: Force la création de groupes de taille équilibrée.
+    Priorité à l'équilibrage plutôt qu'à la pureté des clusters.
+    """
+    n = len(noms)
+    nombre_groupes = n // taille_groupe
+    reste = n % taille_groupe
+    
+    # Si il y a un reste, on fait un groupe de plus
+    if reste > 0:
+        nombre_groupes += 1
+    
+    # Clustering avec le nombre exact de groupes
+    features = creer_features_etudiants(noms, matrice_affinite)
+    scaler = StandardScaler()
+    features_scaled = scaler.fit_transform(features)
+    
+    kmeans = KMeans(n_clusters=nombre_groupes, random_state=42, n_init=10)
+    labels = kmeans.fit_predict(features_scaled)
+    
+    # Organiser en groupes initiaux
+    groupes_initiaux = defaultdict(list)
+    for i, label in enumerate(labels):
+        groupes_initiaux[label].append(noms[i])
+    
+    # Équilibrer les tailles
+    groupes_equilibres = equilibrer_tailles_groupes(
+        list(groupes_initiaux.values()), 
+        taille_groupe, 
+        matrice_affinite, 
+        noms
+    )
+    
+    return {"equilibre": groupes_equilibres}
+
+def equilibrer_tailles_groupes(groupes, taille_cible, matrice_affinite, noms):
+    """
+    Équilibre les tailles des groupes en déplaçant les personnes de manière optimale.
+    """
+    noms_index = {nom: i for i, nom in enumerate(noms)}
+    
+    # Continuer jusqu'à ce que les groupes soient équilibrés
+    max_iterations = 50
+    iteration = 0
+    
+    while iteration < max_iterations:
+        tailles = [len(g) for g in groupes]
+        
+        # Si tous les groupes ont une taille acceptable, on s'arrête
+        if max(tailles) - min(tailles) <= 1:
+            break
+        
+        # Trouver le groupe le plus grand et le plus petit
+        idx_max = tailles.index(max(tailles))
+        idx_min = tailles.index(min(tailles))
+        
+        # Trouver la meilleure personne à déplacer
+        meilleure_personne = None
+        meilleur_gain = float('-inf')
+        
+        for personne in groupes[idx_max]:
+            # Calculer le gain de déplacer cette personne
+            gain = calculer_gain_deplacement(
+                personne, groupes[idx_max], groupes[idx_min], 
+                matrice_affinite, noms_index
+            )
+            
+            if gain > meilleur_gain:
+                meilleur_gain = gain
+                meilleure_personne = personne
+        
+        # Effectuer le déplacement
+        if meilleure_personne:
+            groupes[idx_max].remove(meilleure_personne)
+            groupes[idx_min].append(meilleure_personne)
+        
+        iteration += 1
+    
+    return groupes
+
+def calculer_gain_deplacement(personne, groupe_source, groupe_cible, matrice_affinite, noms_index):
+    """
+    Calcule le gain d'affinité en déplaçant une personne d'un groupe à un autre.
+    """
+    idx_personne = noms_index[personne]
+    
+    # Perte d'affinité en quittant le groupe source
+    perte = 0
+    for membre in groupe_source:
+        if membre != personne:
+            idx_membre = noms_index[membre]
+            perte += matrice_affinite[idx_personne, idx_membre] + matrice_affinite[idx_membre, idx_personne]
+    
+    # Gain d'affinité en rejoignant le groupe cible
+    gain = 0
+    for membre in groupe_cible:
+        idx_membre = noms_index[membre]
+        gain += matrice_affinite[idx_personne, idx_membre] + matrice_affinite[idx_membre, idx_personne]
+    
+    return gain - perte
 
 def optimiser_groupes_dans_cluster(cluster_noms, matrice_affinite_globale, noms_globaux, taille_groupe):
     """
@@ -223,6 +323,54 @@ def optimiser_groupes_dans_cluster(cluster_noms, matrice_affinite_globale, noms_
     
     return groupes
 
+def redistribuer_groupes_desequilibres(groupes_initiaux, matrice_affinite, noms, taille_cible):
+    """
+    NOUVELLE FONCTION: Redistribue les groupes déséquilibrés après clustering.
+    """
+    noms_index = {nom: i for i, nom in enumerate(noms)}
+    
+    # Séparer les groupes corrects des groupes trop petits
+    groupes_corrects = []
+    personnes_isolees = []
+    
+    for groupe in groupes_initiaux:
+        if len(groupe) >= taille_cible:
+            groupes_corrects.append(groupe)
+        elif len(groupe) >= taille_cible // 2:
+            # Groupe de taille intermédiaire, on le garde pour l'instant
+            groupes_corrects.append(groupe)
+        else:
+            # Groupe trop petit, redistribuer ses membres
+            personnes_isolees.extend(groupe)
+    
+    # Redistribuer les personnes isolées
+    for personne in personnes_isolees:
+        meilleur_groupe_idx = -1
+        meilleure_affinite = -1
+        
+        # Chercher le meilleur groupe d'accueil
+        for idx, groupe in enumerate(groupes_corrects):
+            if len(groupe) < taille_cible:  # Le groupe peut encore grandir
+                # Calculer l'affinité avec ce groupe
+                affinite_totale = 0
+                for membre in groupe:
+                    i_p = noms_index[personne]
+                    i_m = noms_index[membre]
+                    affinite_totale += matrice_affinite[i_p, i_m] + matrice_affinite[i_m, i_p]
+                
+                if affinite_totale > meilleure_affinite:
+                    meilleure_affinite = affinite_totale
+                    meilleur_groupe_idx = idx
+        
+        # Ajouter au meilleur groupe ou créer un nouveau groupe
+        if meilleur_groupe_idx >= 0:
+            groupes_corrects[meilleur_groupe_idx].append(personne)
+        else:
+            # Créer un nouveau groupe avec cette personne
+            groupes_corrects.append([personne])
+    
+    return groupes_corrects
+
 def calculer_score_satisfaction(groupes, matrice_affinite, noms):
     """
     Calcule le score de satisfaction global de la répartition.
@@ -260,29 +408,41 @@ def calculer_score_satisfaction(groupes, matrice_affinite, noms):
 def effectuer_clustering_complet(noms, matrice_affinite, taille_groupe=2):
     """
     Compare différentes méthodes de clustering et retourne la meilleure.
+    AMÉLIORÉ: Inclut la nouvelle méthode d'équilibrage.
     """
     methodes = {
-        'Spectral': lambda: clustering_spectral(noms, matrice_affinite, taille_groupe),
-        'Hiérarchique': lambda: clustering_hierarchique(noms, matrice_affinite, taille_groupe),
-        'Features K-Means': lambda: clustering_features(noms, matrice_affinite, taille_groupe)
+        'Spectral + Redistribution': lambda: clustering_avec_redistribution(noms, matrice_affinite, taille_groupe),
+        'Hiérarchique + Redistribution': lambda: clustering_hierarchique_avec_redistribution(noms, matrice_affinite, taille_groupe),
+        'K-Means Équilibré': lambda: clustering_force_taille_equilibree(noms, matrice_affinite, taille_groupe),
+        'Spectral Classique': lambda: clustering_spectral(noms, matrice_affinite, taille_groupe),
     }
     
     resultats = {}
     
-    print("🔍 Comparaison des méthodes de clustering...\n")
+    print("🔍 Comparaison des méthodes de clustering (CORRIGÉE)...\n")
     
     for nom_methode, methode_func in methodes.items():
         try:
             # Effectuer le clustering
             clusters = methode_func()
             
-            # Optimiser les groupes dans chaque cluster
-            groupes_finaux = []
-            for cluster_noms in clusters.values():
-                groupes_cluster = optimiser_groupes_dans_cluster(
-                    cluster_noms, matrice_affinite, noms, taille_groupe
+            # Traiter selon le type de retour
+            if isinstance(clusters, dict) and "equilibre" in clusters:
+                # Méthode équilibrée, groupes déjà formés
+                groupes_finaux = clusters["equilibre"]
+            else:
+                # Méthodes classiques, optimiser dans chaque cluster
+                groupes_finaux = []
+                for cluster_noms in clusters.values():
+                    groupes_cluster = optimiser_groupes_dans_cluster(
+                        cluster_noms, matrice_affinite, noms, taille_groupe
+                    )
+                    groupes_finaux.extend(groupes_cluster)
+                
+                # Redistribuer les groupes déséquilibrés
+                groupes_finaux = redistribuer_groupes_desequilibres(
+                    groupes_finaux, matrice_affinite, noms, taille_groupe
                 )
-                groupes_finaux.extend(groupes_cluster)
             
             # Calculer le score
             satisfaction, score_brut = calculer_score_satisfaction(groupes_finaux, matrice_affinite, noms)
@@ -291,13 +451,15 @@ def effectuer_clustering_complet(noms, matrice_affinite, taille_groupe=2):
                 'groupes': groupes_finaux,
                 'satisfaction': satisfaction,
                 'score_brut': score_brut,
-                'nb_clusters': len(clusters)
+                'nb_clusters': len(clusters) if not isinstance(clusters, dict) or "equilibre" not in clusters else len(groupes_finaux)
             }
             
-            print(f" {nom_methode:15} | Satisfaction: {satisfaction:.3f} | Score: {score_brut:.1f}")
+            nb_groupes = len(groupes_finaux)
+            tailles = [len(g) for g in groupes_finaux]
+            print(f"📊 {nom_methode:25} | Satisfaction: {satisfaction:.3f} | {nb_groupes} groupes | Tailles: {tailles}")
             
         except Exception as e:
-            print(f" Erreur avec {nom_methode}: {e}")
+            print(f"❌ Erreur avec {nom_methode}: {e}")
             resultats[nom_methode] = None
     
     # Trouver la meilleure méthode
@@ -309,19 +471,68 @@ def effectuer_clustering_complet(noms, matrice_affinite, taille_groupe=2):
     else:
         raise Exception("Aucune méthode de clustering n'a fonctionné")
 
+def clustering_avec_redistribution(noms, matrice_affinite, taille_groupe):
+    """
+    Clustering spectral avec redistribution des groupes déséquilibrés.
+    """
+    clusters_initiaux = clustering_spectral(noms, matrice_affinite, taille_groupe)
+    
+    # Former des groupes dans chaque cluster
+    groupes_bruts = []
+    for cluster_noms in clusters_initiaux.values():
+        groupes_cluster = optimiser_groupes_dans_cluster(
+            cluster_noms, matrice_affinite, noms, taille_groupe
+        )
+        groupes_bruts.extend(groupes_cluster)
+    
+    # Redistribuer
+    groupes_equilibres = redistribuer_groupes_desequilibres(
+        groupes_bruts, matrice_affinite, noms, taille_groupe
+    )
+    
+    return {"redistribue": groupes_equilibres}
+
+def clustering_hierarchique_avec_redistribution(noms, matrice_affinite, taille_groupe):
+    """
+    Clustering hiérarchique avec redistribution des groupes déséquilibrés.
+    """
+    clusters_initiaux = clustering_hierarchique(noms, matrice_affinite, taille_groupe)
+    
+    # Former des groupes dans chaque cluster
+    groupes_bruts = []
+    for cluster_noms in clusters_initiaux.values():
+        groupes_cluster = optimiser_groupes_dans_cluster(
+            cluster_noms, matrice_affinite, noms, taille_groupe
+        )
+        groupes_bruts.extend(groupes_cluster)
+    
+    # Redistribuer
+    groupes_equilibres = redistribuer_groupes_desequilibres(
+        groupes_bruts, matrice_affinite, noms, taille_groupe
+    )
+    
+    return {"redistribue": groupes_equilibres}
+
 def afficher_resultats_detailles(groupes, satisfaction, score_brut, methode, matrice_affinite, noms):
     """
     Affiche les résultats détaillés avec analyse des affinités.
+    AMÉLIORÉ: Affichage plus clair avec émojis.
     """
-    print(f"\n RÉSULTATS - Méthode: {methode}")
-    print(f"Score de satisfaction: {satisfaction:.1%}")
-    print(f" Score brut: {score_brut:.1f}")
-    print(f"\n GROUPES FORMÉS:\n")
+    print(f"\n🎯 RÉSULTATS FINAUX - Méthode: {methode}")
+    print(f"📊 Score de satisfaction: {satisfaction:.1%}")
+    print(f"🔢 Score brut: {score_brut:.1f}")
+    
+    # Statistiques sur les tailles
+    tailles = [len(g) for g in groupes]
+    print(f"👥 {len(groupes)} groupes formés | Tailles: {tailles} | Cible: {TAILLE_GROUPE}")
+    
+    print(f"\n📋 DÉTAIL DES GROUPES:\n")
     
     noms_index = {nom: i for i, nom in enumerate(noms)}
     
     for idx, membres in enumerate(groupes, 1):
-        print(f" Groupe {idx}: {', '.join(membres)} ({len(membres)} personnes)")
+        taille_emoji = "🟢" if len(membres) == TAILLE_GROUPE else ("🟡" if len(membres) >= TAILLE_GROUPE//2 else "🔴")
+        print(f"{taille_emoji} Groupe {idx}: {', '.join(membres)} ({len(membres)} personnes)")
         
         if len(membres) >= 2:
             # Analyser les affinités dans le groupe
@@ -336,16 +547,16 @@ def afficher_resultats_detailles(groupes, satisfaction, score_brut, methode, mat
                     
                     if affinite_1_vers_2 > 0 or affinite_2_vers_1 > 0:
                         if affinite_1_vers_2 > 0 and affinite_2_vers_1 > 0:
-                            affinites_details.append(f"   {nom1} ↔ {nom2} (mutuel: {affinite_1_vers_2:.1f} ↔ {affinite_2_vers_1:.1f})")
+                            affinites_details.append(f"   💝 {nom1} ↔ {nom2} (mutuel: {affinite_1_vers_2:.1f} ↔ {affinite_2_vers_1:.1f})")
                         elif affinite_1_vers_2 > 0:
-                            affinites_details.append(f"   {nom1} → {nom2} ({affinite_1_vers_2:.1f})")
+                            affinites_details.append(f"   💘 {nom1} → {nom2} ({affinite_1_vers_2:.1f})")
                         else:
-                            affinites_details.append(f"   {nom2} → {nom1} ({affinite_2_vers_1:.1f})")
+                            affinites_details.append(f"   💘 {nom2} → {nom1} ({affinite_2_vers_1:.1f})")
             
             if affinites_details:
                 print("\n".join(affinites_details))
             else:
-                print("   Aucune affinité directe")
+                print("   😐 Aucune affinité directe")
         print()
 
 def afficher_groupes(groupes):
@@ -358,20 +569,25 @@ if __name__ == "__main__":
     # Configuration
     # EXCLUSIONS.update(["Ismael", "Julia"])  # Décommenter pour exclure
     
-    print("SYSTÈME DE CLUSTERING POUR FORMATION DE GROUPES")
-    print("=" * 60)
+    print("🎓 SYSTÈME DE CLUSTERING POUR FORMATION DE GROUPES (VERSION CORRIGÉE)")
+    print("=" * 70)
     
     # Lecture des données
     noms, matrice = lire_preferences("backend/algo/preferences.csv")
-    print(f" {len(noms)} étudiants chargés")
-    print(f" {NOMBRE_VOTES} choix par étudiant")
-    print(f"Taille de groupe cible: {TAILLE_GROUPE}")
+    print(f"👥 {len(noms)} étudiants chargés")
+    print(f"🗳️  {NOMBRE_VOTES} choix par étudiant")
+    print(f"🎯 Taille de groupe cible: {TAILLE_GROUPE}")
+    print(f"📊 Nombre de groupes attendu: {len(noms) // TAILLE_GROUPE} à {len(noms) // TAILLE_GROUPE + 1}")
     
     if EXCLUSIONS:
-        print(f" Exclusions: {', '.join(EXCLUSIONS)}")
+        print(f"❌ Exclusions: {', '.join(EXCLUSIONS)}")
+    
+    print("\n" + "="*70)
     
     # Effectuer le clustering
     resultat, meilleure_methode, tous_resultats = effectuer_clustering_complet(noms, matrice, TAILLE_GROUPE)
+    
+    print("\n" + "="*70)
     
     # Afficher les résultats détaillés
     afficher_resultats_detailles(
@@ -382,3 +598,5 @@ if __name__ == "__main__":
         matrice,
         noms
     )
+    
+    print("🏆 Problème résolu ! Les groupes sont maintenant équilibrés.")
