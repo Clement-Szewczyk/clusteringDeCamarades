@@ -4,7 +4,7 @@ from services.student_service import StudentService
 class StudentResource(Resource):
     def get(self, student_id=None):
         """
-        Récupère un étudiant par son ID ou tous les étudiants si aucun ID n'est spécifié.
+        Retrieves a student by ID, or all students if no ID is specified.
         """
         if student_id:
             student = StudentService.get_student(student_id)
@@ -16,26 +16,26 @@ class StudentResource(Resource):
     
     def post(self):
         """
-        Crée un nouvel étudiant.
+        Create a new student.
         """
         return StudentService.create_student()
     
     def put(self, student_id):
         """
-        Met à jour un étudiant existant par son ID.
+        Updates an existing student with its ID.
         """
         return StudentService.update_student(student_id)
     
     def delete(self, student_id):
         """
-        Supprime un étudiant par son ID.
+        Deletes a student by ID.
         """
         return StudentService.delete_student(student_id)
 
 class StudentBatchResource(Resource):
     def post(self):
         """
-        Crée plusieurs étudiants en une seule requête.
+        Creates several students in a single request.
         """
         return StudentService.create_students_batch()
 

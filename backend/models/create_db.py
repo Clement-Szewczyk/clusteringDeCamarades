@@ -14,7 +14,6 @@ def init_db(app=None):
         app = current_app
         
     with app.app_context():
-        db.drop_all()  # Be careful with this in production!
         db.create_all()
         
         # Create default roles

@@ -5,7 +5,7 @@ class Config:
     DEBUG = False
     TESTING = False
     os.environ.get('SECRET_KEY')
-    # Utiliser SQLite comme base de données interne
+    # Use SQLite as an internal database
     SQLALCHEMY_DATABASE_URI = 'sqlite:///app.db'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
