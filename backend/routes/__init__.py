@@ -3,11 +3,13 @@
 
 from .hello_world import registerHelloWorldRoutes
 from .student import registerStudentRoutes
+from .teacher import registerTeacherRoutes
 
 
 def register_routes(app, api):
     """Register all API routes"""
     registerHelloWorldRoutes(api)
     registerStudentRoutes(api)
+    registerTeacherRoutes(api)
 
 

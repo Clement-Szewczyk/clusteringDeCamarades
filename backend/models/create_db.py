@@ -2,6 +2,7 @@ from extensions import db
 from models.auth_user import AuthUser
 from models.role import Role
 from models.student import Student
+from models.teacher import Teacher
 from models.formular import Formular
 from models.vote import Vote
 from models.user_role import UserRole
