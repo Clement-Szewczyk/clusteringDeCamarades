@@ -4,7 +4,7 @@ from sklearn.cluster import KMeans
 from collections import defaultdict
 
 # Paramètres configurables
-TAILLE_GROUPE = 3  # M personnes par groupe
+TAILLE_GROUPE = 2  # M personnes par groupe
 NOMBRE_VOTES = None  # N votes par étudiant, sera déduit automatiquement depuis le fichier
 EXCLUSIONS = set()  # Liste des noms exclus (ex : absents)
 
