@@ -7,7 +7,7 @@ import warnings
 warnings.filterwarnings('ignore')
 
 # Configurable parameters
-GROUP_SIZE = 5  # M people per group (CORRECTED: 2 instead of 5)
+GROUP_SIZE = 5  # M people per group 
 NUMBER_OF_VOTES = None  # N votes per student, will be automatically deduced
 EXCLUSIONS = set()  # List of excluded names (e.g., absent students)
 
@@ -158,7 +158,7 @@ def featuresClustering(names, affinityMatrix, groupSize):
 
 def forceBalancedSizeClustering(names, affinityMatrix, groupSize):
     """
-    NEW METHOD: Forces the creation of balanced-size groups.
+    Forces the creation of balanced-size groups.
     Priority to balancing rather than cluster purity.
     """
     n = len(names)
@@ -325,7 +325,7 @@ def optimizeGroupsInCluster(clusterNames, globalAffinityMatrix, globalNames, gro
 
 def redistributeUnbalancedGroups(initialGroups, affinityMatrix, names, targetSize):
     """
-    NEW FUNCTION: Redistributes unbalanced groups after clustering.
+    Redistributes unbalanced groups after clustering.
     """
     namesIndex = {name: i for i, name in enumerate(names)}
     
@@ -408,7 +408,6 @@ def calculateSatisfactionScore(groups, affinityMatrix, names):
 def performCompleteClustering(names, affinityMatrix, groupSize=2):
     """
     Compares different clustering methods and returns the best one.
-    IMPROVED: Includes new balancing method.
     """
     methods = {
         'Spectral + Redistribution': lambda: clusteringWithRedistribution(names, affinityMatrix, groupSize),
@@ -516,7 +515,6 @@ def hierarchicalClusteringWithRedistribution(names, affinityMatrix, groupSize):
 def displayDetailedResults(groups, satisfaction, rawScore, method, affinityMatrix, names):
     """
     Displays detailed results with affinity analysis.
-    IMPROVED: Clearer display with emojis.
     """
     print(f"\n FINAL RESULTS - Method: {method}")
     print(f" Satisfaction score: {satisfaction:.1%}")
