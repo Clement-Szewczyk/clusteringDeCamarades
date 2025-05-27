@@ -1,1 +1,17 @@
 venv
+.env
+#éject tous les _pycahce
+__pycache__/
+*.py[cod]
+*$py.class
+**/__pycache__/
+.pytest_cache/
+.coverage
+htmlcov/
+#éject tous les fichiers de configuration
+*.cfg
+#éject tous les fichiers de log
+*.log
+
+
+

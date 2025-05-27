@@ -1,30 +1,50 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, redirect, current_app
 from flask_restful import Api
 from flask_cors import CORS
+from extensions import db  # Importer db depuis extensions
 import os
 from config.config import config
-# Import resources
-from routes import register_routes
+from dotenv import load_dotenv
 
-# Initialize extensions
+# Global variable to store the application instance
+_app = None
 
+def get_app():
+    """Returns the application instance, useful for database operations outside request context"""
+    global _app
+    if _app is not None:
+        return _app
+    return current_app
 
 def create_app(config_name='default'):
-    # Initialize app
+    """Application factory function"""
+    global _app
+    
+    load_dotenv()
     app = Flask(__name__)
     
+    # Store the app instance globally
+    _app = app
+    
     # Load configuration
-    app.config.from_object(config[config_name])
+    app_config = config[config_name]
+    app.config.from_object(app_config)
     
     # Initialize extensions with app
+    db.init_app(app)
     CORS(app)
     
     # Initialize API
     api = Api(app)
     
     # Register routes
+    from routes import register_routes
     register_routes(app, api)
     
+    # Create tables
+    with app.app_context():
+        db.create_all()
+
     # Register error handlers
     @app.errorhandler(404)
     def not_found(error):
@@ -36,7 +56,6 @@ def create_app(config_name='default'):
     
     return app
 
-
 if __name__ == '__main__':
-    app = create_app(os.getenv('FLASK_CONFIG', 'testing'))
+    app = create_app(os.getenv('FLASK_CONFIG', 'development'))
     app.run(debug=True)
