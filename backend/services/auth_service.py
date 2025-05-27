@@ -129,51 +129,54 @@ class AuthService:
     @_ensure_app_context
     def login():
         """Login a user"""
-        data = request.get_json()
-        
-        if not data or 'email' not in data or 'password' not in data:
-            return {'error': 'Email and password are required'}, 400
+        try: 
+            data = request.get_json()
             
-        email = data['email']
-        password = data['password']
-        
-        # Validate email format
-        if not AuthService.validate_email(email):
-            return {'error': 'Invalid email format'}, 400
-        
-        # Find user
-        user = AuthUser.query.filter_by(auth_user_email=email).first()
-        if not user or not check_password_hash(user.auth_user_mdp, password):
-            return {'error': 'Invalid email or password'}, 401
-        
-        # Get user role
-        user_role = UserRole.query.filter_by(user_role_userid=user.auth_user_id).first()
-        role = Role.query.get(user_role.user_role_roleid) if user_role else None
-        role_name = role.role_name if role else 'unknown'
-        
-        # Generate JWT token
-        token_expiration = datetime.utcnow() + timedelta(hours=24)
-        token_payload = {
-            'user_id': user.auth_user_id,
-            'email': user.auth_user_email,
-            'role': role_name,
-            'exp': token_expiration
-        }
-        
-        token = jwt.encode(
-            token_payload,
-            current_app.config['SECRET_KEY'],
-            algorithm='HS256'
-        )
-        
-        return {
-            'token': token,
-            'expires': token_expiration.isoformat(),
-            'user': {
-                'id': user.auth_user_id,
+            if not data or 'email' not in data or 'password' not in data:
+                return {'error': 'Email and password are required'}, 400
+                
+            email = data['email']
+            password = data['password']
+            
+            # Validate email format
+            if not AuthService.validate_email(email):
+                return {'error': 'Invalid email format'}, 400
+            
+            # Find user
+            user = AuthUser.query.filter_by(auth_user_email=email).first()
+            if not user or not check_password_hash(user.auth_user_mdp, password):
+                return {'error': 'Invalid email or password'}, 401
+            
+            # Get user role
+            user_role = UserRole.query.filter_by(user_role_userid=user.auth_user_id).first()
+            role = Role.query.get(user_role.user_role_roleid) if user_role else None
+            role_name = role.role_name if role else 'unknown'
+            
+            # Generate JWT token
+            token_expiration = datetime.utcnow() + timedelta(hours=24)
+            token_payload = {
+                'user_id': user.auth_user_id,
                 'email': user.auth_user_email,
-                'nom': user.auth_user_name,
-                'prenom': user.auth_user_firstname,
-                'role': role_name
+                'role': role_name,
+                'exp': token_expiration
             }
-        }
+            
+            token = jwt.encode(
+                token_payload,
+                current_app.config['SECRET_KEY'],
+                algorithm='HS256'
+            )
+            
+            return {
+                'token': token,
+                'expires': token_expiration.isoformat(),
+                'user': {
+                    'id': user.auth_user_id,
+                    'email': user.auth_user_email,
+                    'nom': user.auth_user_name,
+                    'prenom': user.auth_user_firstname,
+                    'role': role_name
+                }
+            }
+        except Exception as e:
+            return {'error': f'Failed to login: {str(e)}'}, 500

@@ -54,6 +54,7 @@ def create_app(config_name='default'):
     def server_error(error):
         return jsonify({'error': 'Server error'}), 500
     
+        
     return app
 
 if __name__ == '__main__':
