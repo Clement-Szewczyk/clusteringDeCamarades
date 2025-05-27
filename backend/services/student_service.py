@@ -22,21 +22,21 @@ class StudentService:
     
     @staticmethod
     def validate_email(email):
-        """Valide le format de l'email"""
+        """Validates the email format"""
         pattern = r'^[\w\.-]+@[\w\.-]+\.\w+$'
         return bool(re.match(pattern, email))
     
     @staticmethod
     @_ensure_app_context
     def get_all_students():
-        """Récupère tous les étudiants"""
+        """Retrieves all students"""
         students = Student.query.all()
         return [student.to_dict() for student in students]
     
     @staticmethod
     @_ensure_app_context
     def get_student(student_id):
-        """Récupère un étudiant par son ID"""
+        """Retrieves a student by ID"""
         student = Student.query.get(student_id)
         if student:
             return student.to_dict()
@@ -44,7 +44,7 @@ class StudentService:
     
     @staticmethod
     def create_student():
-        """Crée un nouvel étudiant"""
+        """Create a new student"""
         data = request.get_json()
         
         if not data or 'email' not in data:
@@ -52,16 +52,16 @@ class StudentService:
         
         email = data['email']
         
-        # Valider l'email
+        # Validate the email
         if not StudentService.validate_email(email):
             return {'error': 'Invalid email format'}, 400
         
-        # Vérifier si l'email existe déjà
+        # Check if the email already exists
         existing_student = Student.query.filter_by(student_email=email).first()
         if existing_student:
             return {'error': 'Student with this email already exists'}, 409
         
-        # Créer un nouvel étudiant
+        # Create a new student
         try:
             new_student = Student(student_email=email)
             db.session.add(new_student)
@@ -73,7 +73,7 @@ class StudentService:
     
     @staticmethod
     def create_students_batch():
-        """Crée plusieurs étudiants en une seule requête"""
+        """Creates several students in a single request"""
         data = request.get_json()
         
         if not isinstance(data, list):
@@ -91,22 +91,22 @@ class StudentService:
             
             email = item['email']
             
-            # Valider l'email
+            # Validate the email
             if not StudentService.validate_email(email):
                 results['failed'].append({'data': item, 'reason': 'Invalid email format'})
                 continue
             
-            # Vérifier si l'email existe déjà
+            # Check if the email already exists
             existing_student = Student.query.filter_by(student_email=email).first()
             if existing_student:
                 results['failed'].append({'data': item, 'reason': 'Email already exists'})
                 continue
             
-            # Créer un nouvel étudiant
+            # Create a new student
             try:
                 new_student = Student(student_email=email)
                 db.session.add(new_student)
-                db.session.flush()  # Pour obtenir l'ID sans commit
+                db.session.flush()  #To obtain the ID without committing
                 results['success'].append(new_student.to_dict())
             except Exception as e:
                 results['failed'].append({'data': item, 'reason': f'Database error: {str(e)}'})
@@ -126,7 +126,7 @@ class StudentService:
     @staticmethod
     @_ensure_app_context
     def update_student(student_id):
-        """Met à jour un étudiant existant"""
+        """Update an existing student"""
         data = request.get_json()
         
         if not data or 'email' not in data:
@@ -134,21 +134,21 @@ class StudentService:
         
         email = data['email']
         
-        # Valider l'email
+        # Validate the email
         if not StudentService.validate_email(email):
             return {'error': 'Invalid email format'}, 400
         
-        # Vérifier si l'étudiant existe
+        # Check if the student exists
         student = Student.query.get(student_id)
         if not student:
             return {'error': 'Student not found'}, 404
         
-        # Vérifier si l'email existe déjà pour un autre étudiant
+        # Check if the email already exists for another student
         existing_student = Student.query.filter(Student.student_email == email, Student.id != student_id).first()
         if existing_student:
             return {'error': 'Another student with this email already exists'}, 409
         
-        # Mettre à jour l'étudiant
+        # Update student
         try:
             student.student_email = email
             db.session.commit()
@@ -160,7 +160,7 @@ class StudentService:
     @staticmethod
     @_ensure_app_context
     def delete_student(student_id):
-        """Supprime un étudiant par son ID"""
+        """Deletes a student by ID"""
         student = Student.query.get(student_id)
         if not student:
             return {'error': 'Student not found'}, 404
