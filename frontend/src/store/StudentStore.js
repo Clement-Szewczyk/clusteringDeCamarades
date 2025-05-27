@@ -1,5 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
+import apiCluster from '../../api/api';
+
 
 export const useStudentStore = defineStore('student', () => {
     // State
@@ -9,12 +11,9 @@ export const useStudentStore = defineStore('student', () => {
     async function fetchStudents() {
         console.log('Fetching students...');
         try {
-            const response = await fetch('http://localhost:5000/students');
-            if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
-            }
-            students.value = await response.json();
-            console.log('Fetched students:', students.value);
+            const response = await apiCluster.get('students');
+            console.log('Response status:', response.status);
+            students.value = response.data;
         } catch (err) {
             console.error('Error fetching students:', err);
             error.value = err.message;
