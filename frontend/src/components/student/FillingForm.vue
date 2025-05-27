@@ -1,8 +1,8 @@
 <script setup>
 import { ref, computed } from 'vue'
 
-const n = ref(3) // nombre d'inputs (modifiable)
-const m = ref(5) // nombre d'options par select (modifiable)
+const n = ref(3)
+const m = ref(5)
 
 const mList = computed(() => Array.from({ length: m.value }, (_, i) => `Option ${i + 1}`))
 const selectedValues = ref(Array(n.value).fill(''))
