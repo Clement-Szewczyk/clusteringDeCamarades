@@ -79,18 +79,11 @@ echo [SUCCESS] Setup completed successfully!
 echo ========================================
 echo.
 echo [OK] The virtual environment is now activated.
-echo [START] You can now use Flask commands:
-echo.
-echo   flask --version
-echo   python app.py
-echo   flask run
-echo.
-echo [TIP] To deactivate the virtual environment later:
-echo   deactivate
+echo [START] Launching app.py...
 echo.
 echo ========================================
-echo [CONSOLE] Opening command prompt...
+echo [APP] Starting Flask application...
 echo ========================================
 
-REM Open a new command prompt with the environment activated
-cmd /k
+REM Launch app.py instead of opening a command prompt
+python app.py
