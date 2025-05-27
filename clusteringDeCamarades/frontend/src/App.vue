@@ -1,10 +1,11 @@
 <script setup>
+import Temp from './components/Temp.vue';
 </script>
 
 <template>
   <header>
   </header>
   <main>
-    <h1> Clustering de camarages</h1>
+    <Temp />
   </main>
 </template>
