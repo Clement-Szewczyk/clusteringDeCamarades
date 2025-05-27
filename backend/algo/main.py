@@ -6,118 +6,118 @@ from collections import defaultdict
 import warnings
 warnings.filterwarnings('ignore')
 
-# Paramètres configurables
-TAILLE_GROUPE = 2  # M personnes par groupe (CORRIGÉ: 2 au lieu de 5)
-NOMBRE_VOTES = None  # N votes par étudiant, sera déduit automatiquement
-EXCLUSIONS = set()  # Liste des noms exclus (ex : absents)
+# Configurable parameters
+GROUP_SIZE = 5  # M people per group (CORRECTED: 2 instead of 5)
+NUMBER_OF_VOTES = None  # N votes per student, will be automatically deduced
+EXCLUSIONS = set()  # List of excluded names (e.g., absent students)
 
-def lire_preferences(fichier_csv):
-    """Lecture et traitement des préférences depuis le CSV."""
-    df = pd.read_csv(fichier_csv)
-    noms = [nom for nom in df["nom"].tolist() if nom not in EXCLUSIONS]
-    noms_index = {nom: i for i, nom in enumerate(noms)}
-    n = len(noms)
+def readPreferences(csvFile):
+    """Reading and processing preferences from CSV."""
+    df = pd.read_csv(csvFile)
+    names = [name for name in df["nom"].tolist() if name not in EXCLUSIONS]
+    namesIndex = {name: i for i, name in enumerate(names)}
+    n = len(names)
     
-    # Trouver les colonnes de votes
-    colonnes_votes = [col for col in df.columns if col.startswith("choix_")]
-    global NOMBRE_VOTES
-    NOMBRE_VOTES = len(colonnes_votes)
+    # Find vote columns
+    voteColumns = [col for col in df.columns if col.startswith("choix_")]
+    global NUMBER_OF_VOTES
+    NUMBER_OF_VOTES = len(voteColumns)
     
-    # Matrice d'affinité avec pondération décroissante
-    affinite = np.zeros((n, n), dtype=float)
-    poids_choix = list(range(NOMBRE_VOTES, 0, -1))
+    # Affinity matrix with decreasing weighting
+    affinity = np.zeros((n, n), dtype=float)
+    choiceWeights = list(range(NUMBER_OF_VOTES, 0, -1))
     
-    for _, ligne in df.iterrows():
-        nom = ligne["nom"]
-        if nom in EXCLUSIONS or nom not in noms_index:
+    for _, row in df.iterrows():
+        name = row["nom"]
+        if name in EXCLUSIONS or name not in namesIndex:
             continue
-        i = noms_index[nom]
-        for j, choix_col in enumerate(colonnes_votes):
-            camarade = ligne[choix_col]
-            if pd.notna(camarade) and camarade in noms_index:
-                k = noms_index[camarade]
-                affinite[i][k] += poids_choix[j]
+        i = namesIndex[name]
+        for j, choiceCol in enumerate(voteColumns):
+            classmate = row[choiceCol]
+            if pd.notna(classmate) and classmate in namesIndex:
+                k = namesIndex[classmate]
+                affinity[i][k] += choiceWeights[j]
     
-    # Matrice symétrique avec bonus pour affinités mutuelles
-    affinite_mutuelle = np.minimum(affinite, affinite.T)  # Affinités mutuelles
-    affinite_unilaterale = affinite + affinite.T - 2 * affinite_mutuelle
+    # Symmetric matrix with bonus for mutual affinities
+    mutualAffinity = np.minimum(affinity, affinity.T)  # Mutual affinities
+    unilateralAffinity = affinity + affinity.T - 2 * mutualAffinity
     
-    # Score final: mutuel × 1.5 + unilateral × 1.0
-    affinite_finale = affinite_mutuelle * 1.5 + affinite_unilaterale * 0.5
+    # Final score: mutual × 1.5 + unilateral × 1.0
+    finalAffinity = mutualAffinity * 1.5 + unilateralAffinity * 0.5
     
-    return noms, affinite_finale
+    return names, finalAffinity
 
-def creer_features_etudiants(noms, matrice_affinite):
+def createStudentFeatures(names, affinityMatrix):
     """
-    Transforme la matrice d'affinité en vecteurs de features pour clustering.
-    Chaque étudiant devient un point dans un espace vectoriel.
+    Transforms the affinity matrix into feature vectors for clustering.
+    Each student becomes a point in a vector space.
     """
-    n = len(noms)
+    n = len(names)
     features = []
     
     for i in range(n):
-        etudiant_features = []
+        studentFeatures = []
         
-        # 1. Profil de préférences émises (qui il choisit)
-        preferences_emises = matrice_affinite[i, :]
-        etudiant_features.extend(preferences_emises)
+        # 1. Emitted preferences profile (who they choose)
+        emittedPreferences = affinityMatrix[i, :]
+        studentFeatures.extend(emittedPreferences)
         
-        # 2. Profil de popularité (qui le choisit)
-        popularite = matrice_affinite[:, i]
-        etudiant_features.extend(popularite)
+        # 2. Popularity profile (who chooses them)
+        popularity = affinityMatrix[:, i]
+        studentFeatures.extend(popularity)
         
-        # 3. Métriques agrégées
-        total_preferences = np.sum(preferences_emises)
-        total_popularite = np.sum(popularite)
-        affinites_mutuelles = np.sum(np.minimum(preferences_emises, popularite))
+        # 3. Aggregated metrics
+        totalPreferences = np.sum(emittedPreferences)
+        totalPopularity = np.sum(popularity)
+        mutualAffinities = np.sum(np.minimum(emittedPreferences, popularity))
         
-        etudiant_features.extend([
-            total_preferences,      # Nombre total de "points" donnés
-            total_popularite,       # Points reçus (popularité)
-            affinites_mutuelles,    # Affinités réciproques
-            np.max(preferences_emises),  # Affinité max émise
-            np.mean(preferences_emises[preferences_emises > 0]) if np.any(preferences_emises > 0) else 0,  # Affinité moyenne
+        studentFeatures.extend([
+            totalPreferences,      # Total number of "points" given
+            totalPopularity,       # Points received (popularity)
+            mutualAffinities,      # Reciprocal affinities
+            np.max(emittedPreferences),  # Max emitted affinity
+            np.mean(emittedPreferences[emittedPreferences > 0]) if np.any(emittedPreferences > 0) else 0,  # Average affinity
         ])
         
-        features.append(etudiant_features)
+        features.append(studentFeatures)
     
     return np.array(features)
 
-def clustering_spectral(noms, matrice_affinite, taille_groupe):
+def spectralClustering(names, affinityMatrix, groupSize):
     """
-    Clustering spectral utilisant directement la matrice d'affinité.
-    Idéal pour les données de type graphe.
+    Spectral clustering using the affinity matrix directly.
+    Ideal for graph-type data.
     """
-    n = len(noms)
-    k = max(1, n // taille_groupe)
+    n = len(names)
+    k = max(1, n // groupSize)
     
-    # Clustering spectral avec matrice d'affinité pré-calculée
+    # Spectral clustering with pre-calculated affinity matrix
     spectral = SpectralClustering(
         n_clusters=k, 
         affinity='precomputed',
         random_state=42
     )
     
-    labels = spectral.fit_predict(matrice_affinite)
+    labels = spectral.fit_predict(affinityMatrix)
     
-    # Organiser en clusters
+    # Organize into clusters
     clusters = defaultdict(list)
     for i, label in enumerate(labels):
-        clusters[label].append(noms[i])
+        clusters[label].append(names[i])
     
     return dict(clusters)
 
-def clustering_hierarchique(noms, matrice_affinite, taille_groupe):
+def hierarchicalClustering(names, affinityMatrix, groupSize):
     """
-    Clustering hiérarchique agglomératif.
-    Utilise la matrice d'affinité comme mesure de distance.
+    Agglomerative hierarchical clustering.
+    Uses the affinity matrix as a distance measure.
     """
-    n = len(noms)
-    k = max(1, n // taille_groupe)
+    n = len(names)
+    k = max(1, n // groupSize)
     
-    # Convertir affinité en distance (distance = max_affinité - affinité)
-    max_affinite = np.max(matrice_affinite)
-    distance_matrix = max_affinite - matrice_affinite + 0.1  # +0.1 pour éviter distance=0
+    # Convert affinity to distance (distance = max_affinity - affinity)
+    maxAffinity = np.max(affinityMatrix)
+    distanceMatrix = maxAffinity - affinityMatrix + 0.1  # +0.1 to avoid distance=0
     
     hierarchical = AgglomerativeClustering(
         n_clusters=k,
@@ -125,478 +125,476 @@ def clustering_hierarchique(noms, matrice_affinite, taille_groupe):
         linkage='average'
     )
     
-    labels = hierarchical.fit_predict(distance_matrix)
+    labels = hierarchical.fit_predict(distanceMatrix)
     
     clusters = defaultdict(list)
     for i, label in enumerate(labels):
-        clusters[label].append(noms[i])
+        clusters[label].append(names[i])
     
     return dict(clusters)
 
-def clustering_features(noms, matrice_affinite, taille_groupe):
+def featuresClustering(names, affinityMatrix, groupSize):
     """
-    Clustering basé sur les features des étudiants.
-    Transforme les affinités en vecteurs de caractéristiques.
+    Clustering based on student features.
+    Transforms affinities into feature vectors.
     """
-    n = len(noms)
-    k = max(1, n // taille_groupe)
+    n = len(names)
+    k = max(1, n // groupSize)
     
-    # Créer les features et normaliser
-    features = creer_features_etudiants(noms, matrice_affinite)
+    # Create features and normalize
+    features = createStudentFeatures(names, affinityMatrix)
     scaler = StandardScaler()
-    features_scaled = scaler.fit_transform(features)
+    scaledFeatures = scaler.fit_transform(features)
     
-    # K-Means sur les features normalisées
+    # K-Means on normalized features
     kmeans = KMeans(n_clusters=k, random_state=42, n_init=10)
-    labels = kmeans.fit_predict(features_scaled)
+    labels = kmeans.fit_predict(scaledFeatures)
     
     clusters = defaultdict(list)
     for i, label in enumerate(labels):
-        clusters[label].append(noms[i])
+        clusters[label].append(names[i])
     
     return dict(clusters)
 
-def clustering_force_taille_equilibree(noms, matrice_affinite, taille_groupe):
+def forceBalancedSizeClustering(names, affinityMatrix, groupSize):
     """
-    NOUVELLE MÉTHODE: Force la création de groupes de taille équilibrée.
-    Priorité à l'équilibrage plutôt qu'à la pureté des clusters.
+    NEW METHOD: Forces the creation of balanced-size groups.
+    Priority to balancing rather than cluster purity.
     """
-    n = len(noms)
-    nombre_groupes = n // taille_groupe
-    reste = n % taille_groupe
+    n = len(names)
+    numberOfGroups = n // groupSize
+    remainder = n % groupSize
     
-    # Si il y a un reste, on fait un groupe de plus
-    if reste > 0:
-        nombre_groupes += 1
+    # If there's a remainder, make one more group
+    if remainder > 0:
+        numberOfGroups += 1
     
-    # Clustering avec le nombre exact de groupes
-    features = creer_features_etudiants(noms, matrice_affinite)
+    # Clustering with exact number of groups
+    features = createStudentFeatures(names, affinityMatrix)
     scaler = StandardScaler()
-    features_scaled = scaler.fit_transform(features)
+    scaledFeatures = scaler.fit_transform(features)
     
-    kmeans = KMeans(n_clusters=nombre_groupes, random_state=42, n_init=10)
-    labels = kmeans.fit_predict(features_scaled)
+    kmeans = KMeans(n_clusters=numberOfGroups, random_state=42, n_init=10)
+    labels = kmeans.fit_predict(scaledFeatures)
     
-    # Organiser en groupes initiaux
-    groupes_initiaux = defaultdict(list)
+    # Organize into initial groups
+    initialGroups = defaultdict(list)
     for i, label in enumerate(labels):
-        groupes_initiaux[label].append(noms[i])
+        initialGroups[label].append(names[i])
     
-    # Équilibrer les tailles
-    groupes_equilibres = equilibrer_tailles_groupes(
-        list(groupes_initiaux.values()), 
-        taille_groupe, 
-        matrice_affinite, 
-        noms
+    # Balance sizes
+    balancedGroups = balanceGroupSizes(
+        list(initialGroups.values()), 
+        groupSize, 
+        affinityMatrix, 
+        names
     )
     
-    return {"equilibre": groupes_equilibres}
+    return {"balanced": balancedGroups}
 
-def equilibrer_tailles_groupes(groupes, taille_cible, matrice_affinite, noms):
+def balanceGroupSizes(groups, targetSize, affinityMatrix, names):
     """
-    Équilibre les tailles des groupes en déplaçant les personnes de manière optimale.
+    Balances group sizes by optimally moving people.
     """
-    noms_index = {nom: i for i, nom in enumerate(noms)}
+    namesIndex = {name: i for i, name in enumerate(names)}
     
-    # Continuer jusqu'à ce que les groupes soient équilibrés
-    max_iterations = 50
+    # Continue until groups are balanced
+    maxIterations = 50
     iteration = 0
     
-    while iteration < max_iterations:
-        tailles = [len(g) for g in groupes]
+    while iteration < maxIterations:
+        sizes = [len(g) for g in groups]
         
-        # Si tous les groupes ont une taille acceptable, on s'arrête
-        if max(tailles) - min(tailles) <= 1:
+        # If all groups have acceptable size, stop
+        if max(sizes) - min(sizes) <= 1:
             break
         
-        # Trouver le groupe le plus grand et le plus petit
-        idx_max = tailles.index(max(tailles))
-        idx_min = tailles.index(min(tailles))
+        # Find the largest and smallest groups
+        maxIdx = sizes.index(max(sizes))
+        minIdx = sizes.index(min(sizes))
         
-        # Trouver la meilleure personne à déplacer
-        meilleure_personne = None
-        meilleur_gain = float('-inf')
+        # Find the best person to move
+        bestPerson = None
+        bestGain = float('-inf')
         
-        for personne in groupes[idx_max]:
-            # Calculer le gain de déplacer cette personne
-            gain = calculer_gain_deplacement(
-                personne, groupes[idx_max], groupes[idx_min], 
-                matrice_affinite, noms_index
+        for person in groups[maxIdx]:
+            # Calculate the gain of moving this person
+            gain = calculateMovementGain(
+                person, groups[maxIdx], groups[minIdx], 
+                affinityMatrix, namesIndex
             )
             
-            if gain > meilleur_gain:
-                meilleur_gain = gain
-                meilleure_personne = personne
+            if gain > bestGain:
+                bestGain = gain
+                bestPerson = person
         
-        # Effectuer le déplacement
-        if meilleure_personne:
-            groupes[idx_max].remove(meilleure_personne)
-            groupes[idx_min].append(meilleure_personne)
+        # Perform the movement
+        if bestPerson:
+            groups[maxIdx].remove(bestPerson)
+            groups[minIdx].append(bestPerson)
         
         iteration += 1
     
-    return groupes
+    return groups
 
-def calculer_gain_deplacement(personne, groupe_source, groupe_cible, matrice_affinite, noms_index):
+def calculateMovementGain(person, sourceGroup, targetGroup, affinityMatrix, namesIndex):
     """
-    Calcule le gain d'affinité en déplaçant une personne d'un groupe à un autre.
+    Calculates the affinity gain by moving a person from one group to another.
     """
-    idx_personne = noms_index[personne]
+    personIdx = namesIndex[person]
     
-    # Perte d'affinité en quittant le groupe source
-    perte = 0
-    for membre in groupe_source:
-        if membre != personne:
-            idx_membre = noms_index[membre]
-            perte += matrice_affinite[idx_personne, idx_membre] + matrice_affinite[idx_membre, idx_personne]
+    # Loss of affinity by leaving source group
+    loss = 0
+    for member in sourceGroup:
+        if member != person:
+            memberIdx = namesIndex[member]
+            loss += affinityMatrix[personIdx, memberIdx] + affinityMatrix[memberIdx, personIdx]
     
-    # Gain d'affinité en rejoignant le groupe cible
+    # Gain of affinity by joining target group
     gain = 0
-    for membre in groupe_cible:
-        idx_membre = noms_index[membre]
-        gain += matrice_affinite[idx_personne, idx_membre] + matrice_affinite[idx_membre, idx_personne]
+    for member in targetGroup:
+        memberIdx = namesIndex[member]
+        gain += affinityMatrix[personIdx, memberIdx] + affinityMatrix[memberIdx, personIdx]
     
-    return gain - perte
+    return gain - loss
 
-def optimiser_groupes_dans_cluster(cluster_noms, matrice_affinite_globale, noms_globaux, taille_groupe):
+def optimizeGroupsInCluster(clusterNames, globalAffinityMatrix, globalNames, groupSize):
     """
-    Optimise la formation de groupes au sein d'un cluster donné.
-    Utilise un algorithme glouton amélioré.
+    Optimizes group formation within a given cluster.
+    Uses an improved greedy algorithm.
     """
-    if len(cluster_noms) == 0:
+    if len(clusterNames) == 0:
         return []
     
-    # Créer les indices locaux
-    noms_index_global = {nom: i for i, nom in enumerate(noms_globaux)}
-    indices_cluster = [noms_index_global[nom] for nom in cluster_noms]
+    # Create local indices
+    globalNamesIndex = {name: i for i, name in enumerate(globalNames)}
+    clusterIndices = [globalNamesIndex[name] for name in clusterNames]
     
-    # Extraire la sous-matrice d'affinité pour ce cluster
-    matrice_cluster = matrice_affinite_globale[np.ix_(indices_cluster, indices_cluster)]
+    # Extract affinity submatrix for this cluster
+    clusterMatrix = globalAffinityMatrix[np.ix_(clusterIndices, clusterIndices)]
     
-    groupes = []
-    non_assignes = set(range(len(cluster_noms)))
+    groups = []
+    unassigned = set(range(len(clusterNames)))
     
-    while non_assignes:
-        # Démarrer un nouveau groupe
-        if len(non_assignes) >= taille_groupe:
-            # Trouver la paire avec la plus forte affinité mutuelle
-            meilleure_affinite = -1
-            meilleur_debut = None
+    while unassigned:
+        # Start a new group
+        if len(unassigned) >= groupSize:
+            # Find the pair with strongest mutual affinity
+            bestAffinity = -1
+            bestStart = None
             
-            for i in non_assignes:
-                for j in non_assignes:
+            for i in unassigned:
+                for j in unassigned:
                     if i != j:
-                        affinite_mutuelle = matrice_cluster[i, j] + matrice_cluster[j, i]
-                        if affinite_mutuelle > meilleure_affinite:
-                            meilleure_affinite = affinite_mutuelle
-                            meilleur_debut = (i, j)
+                        mutualAffinity = clusterMatrix[i, j] + clusterMatrix[j, i]
+                        if mutualAffinity > bestAffinity:
+                            bestAffinity = mutualAffinity
+                            bestStart = (i, j)
             
-            if meilleur_debut:
-                groupe_indices = list(meilleur_debut)
-                for idx in meilleur_debut:
-                    non_assignes.remove(idx)
+            if bestStart:
+                groupIndices = list(bestStart)
+                for idx in bestStart:
+                    unassigned.remove(idx)
             else:
-                # Pas d'affinité mutuelle, prendre le plus populaire
-                plus_populaire = max(non_assignes, key=lambda x: matrice_cluster[x, :].sum())
-                groupe_indices = [plus_populaire]
-                non_assignes.remove(plus_populaire)
+                # No mutual affinity, take the most popular
+                mostPopular = max(unassigned, key=lambda x: clusterMatrix[x, :].sum())
+                groupIndices = [mostPopular]
+                unassigned.remove(mostPopular)
             
-            # Compléter le groupe
-            while len(groupe_indices) < taille_groupe and non_assignes:
-                # Trouver le candidat qui maximise l'affinité avec le groupe existant
-                meilleur_candidat = max(
-                    non_assignes,
-                    key=lambda c: sum(matrice_cluster[c, g] + matrice_cluster[g, c] 
-                                    for g in groupe_indices)
+            # Complete the group
+            while len(groupIndices) < groupSize and unassigned:
+                # Find candidate who maximizes affinity with existing group
+                bestCandidate = max(
+                    unassigned,
+                    key=lambda c: sum(clusterMatrix[c, g] + clusterMatrix[g, c] 
+                                    for g in groupIndices)
                 )
-                groupe_indices.append(meilleur_candidat)
-                non_assignes.remove(meilleur_candidat)
+                groupIndices.append(bestCandidate)
+                unassigned.remove(bestCandidate)
             
         else:
-            # Groupe final avec les restants
-            groupe_indices = list(non_assignes)
-            non_assignes.clear()
+            # Final group with remaining members
+            groupIndices = list(unassigned)
+            unassigned.clear()
         
-        # Convertir indices en noms
-        groupe_noms = [cluster_noms[idx] for idx in groupe_indices]
-        groupes.append(groupe_noms)
+        # Convert indices to names
+        groupNames = [clusterNames[idx] for idx in groupIndices]
+        groups.append(groupNames)
     
-    return groupes
+    return groups
 
-def redistribuer_groupes_desequilibres(groupes_initiaux, matrice_affinite, noms, taille_cible):
+def redistributeUnbalancedGroups(initialGroups, affinityMatrix, names, targetSize):
     """
-    NOUVELLE FONCTION: Redistribue les groupes déséquilibrés après clustering.
+    NEW FUNCTION: Redistributes unbalanced groups after clustering.
     """
-    noms_index = {nom: i for i, nom in enumerate(noms)}
+    namesIndex = {name: i for i, name in enumerate(names)}
     
-    # Séparer les groupes corrects des groupes trop petits
-    groupes_corrects = []
-    personnes_isolees = []
+    # Separate correct groups from groups that are too small
+    correctGroups = []
+    isolatedPeople = []
     
-    for groupe in groupes_initiaux:
-        if len(groupe) >= taille_cible:
-            groupes_corrects.append(groupe)
-        elif len(groupe) >= taille_cible // 2:
-            # Groupe de taille intermédiaire, on le garde pour l'instant
-            groupes_corrects.append(groupe)
+    for group in initialGroups:
+        if len(group) >= targetSize:
+            correctGroups.append(group)
+        elif len(group) >= targetSize // 2:
+            # Intermediate size group, keep it for now
+            correctGroups.append(group)
         else:
-            # Groupe trop petit, redistribuer ses membres
-            personnes_isolees.extend(groupe)
+            # Group too small, redistribute its members
+            isolatedPeople.extend(group)
     
-    # Redistribuer les personnes isolées
-    for personne in personnes_isolees:
-        meilleur_groupe_idx = -1
-        meilleure_affinite = -1
+    # Redistribute isolated people
+    for person in isolatedPeople:
+        bestGroupIdx = -1
+        bestAffinity = -1
         
-        # Chercher le meilleur groupe d'accueil
-        for idx, groupe in enumerate(groupes_corrects):
-            if len(groupe) < taille_cible:  # Le groupe peut encore grandir
-                # Calculer l'affinité avec ce groupe
-                affinite_totale = 0
-                for membre in groupe:
-                    i_p = noms_index[personne]
-                    i_m = noms_index[membre]
-                    affinite_totale += matrice_affinite[i_p, i_m] + matrice_affinite[i_m, i_p]
+        # Search for the best host group
+        for idx, group in enumerate(correctGroups):
+            if len(group) < targetSize:  # Group can still grow
+                # Calculate affinity with this group
+                totalAffinity = 0
+                for member in group:
+                    personIdx = namesIndex[person]
+                    memberIdx = namesIndex[member]
+                    totalAffinity += affinityMatrix[personIdx, memberIdx] + affinityMatrix[memberIdx, personIdx]
                 
-                if affinite_totale > meilleure_affinite:
-                    meilleure_affinite = affinite_totale
-                    meilleur_groupe_idx = idx
+                if totalAffinity > bestAffinity:
+                    bestAffinity = totalAffinity
+                    bestGroupIdx = idx
         
-        # Ajouter au meilleur groupe ou créer un nouveau groupe
-        if meilleur_groupe_idx >= 0:
-            groupes_corrects[meilleur_groupe_idx].append(personne)
+        # Add to best group or create new group
+        if bestGroupIdx >= 0:
+            correctGroups[bestGroupIdx].append(person)
         else:
-            # Créer un nouveau groupe avec cette personne
-            groupes_corrects.append([personne])
+            # Create new group with this person
+            correctGroups.append([person])
     
-    return groupes_corrects
+    return correctGroups
 
-def calculer_score_satisfaction(groupes, matrice_affinite, noms):
+def calculateSatisfactionScore(groups, affinityMatrix, names):
     """
-    Calcule le score de satisfaction global de la répartition.
+    Calculates the global satisfaction score of the distribution.
     """
-    noms_index = {nom: i for i, nom in enumerate(noms)}
+    namesIndex = {name: i for i, name in enumerate(names)}
     
-    score_total = 0
-    affinite_possible_totale = 0
+    totalScore = 0
+    totalPossibleAffinity = 0
     
-    for groupe in groupes:
-        if len(groupe) < 2:
+    for group in groups:
+        if len(group) < 2:
             continue
         
-        # Calculer l'affinité intra-groupe
-        affinite_groupe = 0
-        affinite_possible = 0
+        # Calculate intra-group affinity
+        groupAffinity = 0
+        possibleAffinity = 0
         
-        for i in range(len(groupe)):
-            for j in range(i + 1, len(groupe)):
-                idx_i = noms_index[groupe[i]]
-                idx_j = noms_index[groupe[j]]
+        for i in range(len(group)):
+            for j in range(i + 1, len(group)):
+                idxI = namesIndex[group[i]]
+                idxJ = namesIndex[group[j]]
                 
-                affinite_actuelle = matrice_affinite[idx_i, idx_j] + matrice_affinite[idx_j, idx_i]
-                affinite_groupe += affinite_actuelle
+                currentAffinity = affinityMatrix[idxI, idxJ] + affinityMatrix[idxJ, idxI]
+                groupAffinity += currentAffinity
                 
-                # Affinité possible max (si tous les choix mutuels au max)
-                affinite_possible += 2 * NOMBRE_VOTES * 1.5  # Max avec bonus mutuel
+                # Maximum possible affinity (if all mutual choices at max)
+                possibleAffinity += 2 * NUMBER_OF_VOTES * 1.5  # Max with mutual bonus
         
-        score_total += affinite_groupe
-        affinite_possible_totale += affinite_possible
+        totalScore += groupAffinity
+        totalPossibleAffinity += possibleAffinity
     
-    satisfaction = score_total / max(affinite_possible_totale, 1)
-    return satisfaction, score_total
+    satisfaction = totalScore / max(totalPossibleAffinity, 1)
+    return satisfaction, totalScore
 
-def effectuer_clustering_complet(noms, matrice_affinite, taille_groupe=2):
+def performCompleteClustering(names, affinityMatrix, groupSize=2):
     """
-    Compare différentes méthodes de clustering et retourne la meilleure.
-    AMÉLIORÉ: Inclut la nouvelle méthode d'équilibrage.
+    Compares different clustering methods and returns the best one.
+    IMPROVED: Includes new balancing method.
     """
-    methodes = {
-        'Spectral + Redistribution': lambda: clustering_avec_redistribution(noms, matrice_affinite, taille_groupe),
-        'Hiérarchique + Redistribution': lambda: clustering_hierarchique_avec_redistribution(noms, matrice_affinite, taille_groupe),
-        'K-Means Équilibré': lambda: clustering_force_taille_equilibree(noms, matrice_affinite, taille_groupe),
-        'Spectral Classique': lambda: clustering_spectral(noms, matrice_affinite, taille_groupe),
+    methods = {
+        'Spectral + Redistribution': lambda: clusteringWithRedistribution(names, affinityMatrix, groupSize),
+        'Hierarchical + Redistribution': lambda: hierarchicalClusteringWithRedistribution(names, affinityMatrix, groupSize),
+        'Balanced K-Means': lambda: forceBalancedSizeClustering(names, affinityMatrix, groupSize),
+        'Classic Spectral': lambda: spectralClustering(names, affinityMatrix, groupSize),
     }
     
-    resultats = {}
+    results = {}
     
-    print("🔍 Comparaison des méthodes de clustering (CORRIGÉE)...\n")
+    print(" Comparing clustering methods (CORRECTED)...\n")
     
-    for nom_methode, methode_func in methodes.items():
+    for methodName, methodFunc in methods.items():
         try:
-            # Effectuer le clustering
-            clusters = methode_func()
+            # Perform clustering
+            clusters = methodFunc()
             
-            # Traiter selon le type de retour
-            if isinstance(clusters, dict) and "equilibre" in clusters:
-                # Méthode équilibrée, groupes déjà formés
-                groupes_finaux = clusters["equilibre"]
+            # Process according to return type
+            if isinstance(clusters, dict) and "balanced" in clusters:
+                # Balanced method, groups already formed
+                finalGroups = clusters["balanced"]
             else:
-                # Méthodes classiques, optimiser dans chaque cluster
-                groupes_finaux = []
-                for cluster_noms in clusters.values():
-                    groupes_cluster = optimiser_groupes_dans_cluster(
-                        cluster_noms, matrice_affinite, noms, taille_groupe
+                # Classic methods, optimize within each cluster
+                finalGroups = []
+                for clusterNames in clusters.values():
+                    clusterGroups = optimizeGroupsInCluster(
+                        clusterNames, affinityMatrix, names, groupSize
                     )
-                    groupes_finaux.extend(groupes_cluster)
+                    finalGroups.extend(clusterGroups)
                 
-                # Redistribuer les groupes déséquilibrés
-                groupes_finaux = redistribuer_groupes_desequilibres(
-                    groupes_finaux, matrice_affinite, noms, taille_groupe
+                # Redistribute unbalanced groups
+                finalGroups = redistributeUnbalancedGroups(
+                    finalGroups, affinityMatrix, names, groupSize
                 )
             
-            # Calculer le score
-            satisfaction, score_brut = calculer_score_satisfaction(groupes_finaux, matrice_affinite, noms)
+            # Calculate score
+            satisfaction, rawScore = calculateSatisfactionScore(finalGroups, affinityMatrix, names)
             
-            resultats[nom_methode] = {
-                'groupes': groupes_finaux,
+            results[methodName] = {
+                'groups': finalGroups,
                 'satisfaction': satisfaction,
-                'score_brut': score_brut,
-                'nb_clusters': len(clusters) if not isinstance(clusters, dict) or "equilibre" not in clusters else len(groupes_finaux)
+                'rawScore': rawScore,
+                'nbClusters': len(clusters) if not isinstance(clusters, dict) or "balanced" not in clusters else len(finalGroups)
             }
             
-            nb_groupes = len(groupes_finaux)
-            tailles = [len(g) for g in groupes_finaux]
-            print(f"📊 {nom_methode:25} | Satisfaction: {satisfaction:.3f} | {nb_groupes} groupes | Tailles: {tailles}")
+            nbGroups = len(finalGroups)
+            sizes = [len(g) for g in finalGroups]
+            print(f" {methodName:25} | Satisfaction: {satisfaction:.3f} | {nbGroups} groups | Sizes: {sizes}")
             
         except Exception as e:
-            print(f"❌ Erreur avec {nom_methode}: {e}")
-            resultats[nom_methode] = None
+            print(f" Error with {methodName}: {e}")
+            results[methodName] = None
     
-    # Trouver la meilleure méthode
-    methodes_valides = {k: v for k, v in resultats.items() if v is not None}
-    if methodes_valides:
-        meilleure_methode = max(methodes_valides.keys(), 
-                              key=lambda k: methodes_valides[k]['satisfaction'])
-        return methodes_valides[meilleure_methode], meilleure_methode, resultats
+    # Find the best method
+    validMethods = {k: v for k, v in results.items() if v is not None}
+    if validMethods:
+        bestMethod = max(validMethods.keys(), 
+                        key=lambda k: validMethods[k]['satisfaction'])
+        return validMethods[bestMethod], bestMethod, results
     else:
-        raise Exception("Aucune méthode de clustering n'a fonctionné")
+        raise Exception("No clustering method worked")
 
-def clustering_avec_redistribution(noms, matrice_affinite, taille_groupe):
+def clusteringWithRedistribution(names, affinityMatrix, groupSize):
     """
-    Clustering spectral avec redistribution des groupes déséquilibrés.
+    Spectral clustering with redistribution of unbalanced groups.
     """
-    clusters_initiaux = clustering_spectral(noms, matrice_affinite, taille_groupe)
+    initialClusters = spectralClustering(names, affinityMatrix, groupSize)
     
-    # Former des groupes dans chaque cluster
-    groupes_bruts = []
-    for cluster_noms in clusters_initiaux.values():
-        groupes_cluster = optimiser_groupes_dans_cluster(
-            cluster_noms, matrice_affinite, noms, taille_groupe
+    # Form groups in each cluster
+    rawGroups = []
+    for clusterNames in initialClusters.values():
+        clusterGroups = optimizeGroupsInCluster(
+            clusterNames, affinityMatrix, names, groupSize
         )
-        groupes_bruts.extend(groupes_cluster)
+        rawGroups.extend(clusterGroups)
     
-    # Redistribuer
-    groupes_equilibres = redistribuer_groupes_desequilibres(
-        groupes_bruts, matrice_affinite, noms, taille_groupe
+    # Redistribute
+    balancedGroups = redistributeUnbalancedGroups(
+        rawGroups, affinityMatrix, names, groupSize
     )
     
-    return {"redistribue": groupes_equilibres}
+    return {"redistributed": balancedGroups}
 
-def clustering_hierarchique_avec_redistribution(noms, matrice_affinite, taille_groupe):
+def hierarchicalClusteringWithRedistribution(names, affinityMatrix, groupSize):
     """
-    Clustering hiérarchique avec redistribution des groupes déséquilibrés.
+    Hierarchical clustering with redistribution of unbalanced groups.
     """
-    clusters_initiaux = clustering_hierarchique(noms, matrice_affinite, taille_groupe)
+    initialClusters = hierarchicalClustering(names, affinityMatrix, groupSize)
     
-    # Former des groupes dans chaque cluster
-    groupes_bruts = []
-    for cluster_noms in clusters_initiaux.values():
-        groupes_cluster = optimiser_groupes_dans_cluster(
-            cluster_noms, matrice_affinite, noms, taille_groupe
+    # Form groups in each cluster
+    rawGroups = []
+    for clusterNames in initialClusters.values():
+        clusterGroups = optimizeGroupsInCluster(
+            clusterNames, affinityMatrix, names, groupSize
         )
-        groupes_bruts.extend(groupes_cluster)
+        rawGroups.extend(clusterGroups)
     
-    # Redistribuer
-    groupes_equilibres = redistribuer_groupes_desequilibres(
-        groupes_bruts, matrice_affinite, noms, taille_groupe
+    # Redistribute
+    balancedGroups = redistributeUnbalancedGroups(
+        rawGroups, affinityMatrix, names, groupSize
     )
     
-    return {"redistribue": groupes_equilibres}
+    return {"redistributed": balancedGroups}
 
-def afficher_resultats_detailles(groupes, satisfaction, score_brut, methode, matrice_affinite, noms):
+def displayDetailedResults(groups, satisfaction, rawScore, method, affinityMatrix, names):
     """
-    Affiche les résultats détaillés avec analyse des affinités.
-    AMÉLIORÉ: Affichage plus clair avec émojis.
+    Displays detailed results with affinity analysis.
+    IMPROVED: Clearer display with emojis.
     """
-    print(f"\n🎯 RÉSULTATS FINAUX - Méthode: {methode}")
-    print(f"📊 Score de satisfaction: {satisfaction:.1%}")
-    print(f"🔢 Score brut: {score_brut:.1f}")
+    print(f"\n FINAL RESULTS - Method: {method}")
+    print(f" Satisfaction score: {satisfaction:.1%}")
+    print(f" Raw score: {rawScore:.1f}")
     
-    # Statistiques sur les tailles
-    tailles = [len(g) for g in groupes]
-    print(f"👥 {len(groupes)} groupes formés | Tailles: {tailles} | Cible: {TAILLE_GROUPE}")
+    # Size statistics
+    sizes = [len(g) for g in groups]
+    print(f" {len(groups)} groups formed | Sizes: {sizes} | Target: {GROUP_SIZE}")
     
-    print(f"\n📋 DÉTAIL DES GROUPES:\n")
+    print(f"\n GROUP DETAILS:\n")
     
-    noms_index = {nom: i for i, nom in enumerate(noms)}
+    namesIndex = {name: i for i, name in enumerate(names)}
     
-    for idx, membres in enumerate(groupes, 1):
-        taille_emoji = "🟢" if len(membres) == TAILLE_GROUPE else ("🟡" if len(membres) >= TAILLE_GROUPE//2 else "🔴")
-        print(f"{taille_emoji} Groupe {idx}: {', '.join(membres)} ({len(membres)} personnes)")
+    for idx, members in enumerate(groups, 1):
+        sizeEmoji = "🟢" if len(members) == GROUP_SIZE else ("🟡" if len(members) >= GROUP_SIZE//2 else "🔴")
+        print(f"{sizeEmoji} Group {idx}: {', '.join(members)} ({len(members)} people)")
         
-        if len(membres) >= 2:
-            # Analyser les affinités dans le groupe
-            affinites_details = []
-            for i in range(len(membres)):
-                for j in range(i + 1, len(membres)):
-                    nom1, nom2 = membres[i], membres[j]
-                    idx1, idx2 = noms_index[nom1], noms_index[nom2]
+        if len(members) >= 2:
+            # Analyze affinities in the group
+            affinityDetails = []
+            for i in range(len(members)):
+                for j in range(i + 1, len(members)):
+                    name1, name2 = members[i], members[j]
+                    idx1, idx2 = namesIndex[name1], namesIndex[name2]
                     
-                    affinite_1_vers_2 = matrice_affinite[idx1, idx2]
-                    affinite_2_vers_1 = matrice_affinite[idx2, idx1]
+                    affinity1To2 = affinityMatrix[idx1, idx2]
+                    affinity2To1 = affinityMatrix[idx2, idx1]
                     
-                    if affinite_1_vers_2 > 0 or affinite_2_vers_1 > 0:
-                        if affinite_1_vers_2 > 0 and affinite_2_vers_1 > 0:
-                            affinites_details.append(f"   💝 {nom1} ↔ {nom2} (mutuel: {affinite_1_vers_2:.1f} ↔ {affinite_2_vers_1:.1f})")
-                        elif affinite_1_vers_2 > 0:
-                            affinites_details.append(f"   💘 {nom1} → {nom2} ({affinite_1_vers_2:.1f})")
+                    if affinity1To2 > 0 or affinity2To1 > 0:
+                        if affinity1To2 > 0 and affinity2To1 > 0:
+                            affinityDetails.append(f"    {name1} ↔ {name2} (mutual: {affinity1To2:.1f} ↔ {affinity2To1:.1f})")
+                        elif affinity1To2 > 0:
+                            affinityDetails.append(f"    {name1} → {name2} ({affinity1To2:.1f})")
                         else:
-                            affinites_details.append(f"   💘 {nom2} → {nom1} ({affinite_2_vers_1:.1f})")
+                            affinityDetails.append(f"    {name2} → {name1} ({affinity2To1:.1f})")
             
-            if affinites_details:
-                print("\n".join(affinites_details))
+            if affinityDetails:
+                print("\n".join(affinityDetails))
             else:
-                print("   😐 Aucune affinité directe")
+                print("    No direct affinity")
         print()
 
-def afficher_groupes(groupes):
-    """Version simplifiée pour compatibilité."""
-    print("\n👥 Groupes formés :\n")
-    for idx, membres in enumerate(groupes, 1):
-        print(f"Groupe {idx}: {', '.join(membres)}")
+def displayGroups(groups):
+    """Simplified version for compatibility."""
+    print("\n Groups formed:\n")
+    for idx, members in enumerate(groups, 1):
+        print(f"Group {idx}: {', '.join(members)}")
 
 if __name__ == "__main__":
     # Configuration
-    # EXCLUSIONS.update(["Ismael", "Julia"])  # Décommenter pour exclure
+    # EXCLUSIONS.update(["Ismael", "Julia"])  
     
-    print("🎓 SYSTÈME DE CLUSTERING POUR FORMATION DE GROUPES (VERSION CORRIGÉE)")
+    print(" GROUP CLUSTERING SYSTEM FOR GROUP FORMATION (CORRECTED VERSION)")
     print("=" * 70)
     
-    # Lecture des données
-    noms, matrice = lire_preferences("backend/algo/preferences.csv")
-    print(f"👥 {len(noms)} étudiants chargés")
-    print(f"🗳️  {NOMBRE_VOTES} choix par étudiant")
-    print(f"🎯 Taille de groupe cible: {TAILLE_GROUPE}")
-    print(f"📊 Nombre de groupes attendu: {len(noms) // TAILLE_GROUPE} à {len(noms) // TAILLE_GROUPE + 1}")
+    # Read data
+    names, matrix = readPreferences("backend/algo/preferences.csv")
+    print(f" {len(names)} students loaded")
+    print(f"  {NUMBER_OF_VOTES} choices per student")
+    print(f" Target group size: {GROUP_SIZE}")
+    print(f" Expected number of groups: {len(names) // GROUP_SIZE} to {len(names) // GROUP_SIZE + 1}")
     
     if EXCLUSIONS:
-        print(f"❌ Exclusions: {', '.join(EXCLUSIONS)}")
+        print(f" Exclusions: {', '.join(EXCLUSIONS)}")
     
     print("\n" + "="*70)
     
-    # Effectuer le clustering
-    resultat, meilleure_methode, tous_resultats = effectuer_clustering_complet(noms, matrice, TAILLE_GROUPE)
+    # Perform clustering
+    result, bestMethod, allResults = performCompleteClustering(names, matrix, GROUP_SIZE)
     
     print("\n" + "="*70)
     
-    # Afficher les résultats détaillés
-    afficher_resultats_detailles(
-        resultat['groupes'], 
-        resultat['satisfaction'], 
-        resultat['score_brut'],
-        meilleure_methode,
-        matrice,
-        noms
+    # Display detailed results
+    displayDetailedResults(
+        result['groups'], 
+        result['satisfaction'], 
+        result['rawScore'],
+        bestMethod,
+        matrix,
+        names
     )
-    
-    print("🏆 Problème résolu ! Les groupes sont maintenant équilibrés.")
