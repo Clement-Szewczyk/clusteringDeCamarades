@@ -1,16 +1,12 @@
 <script setup>
 const props = defineProps({
-    name: String,
-    surname: String,
+    email: String,
 });
 </script>
 
 <template>
     <span>
-        <h3>{{ name }}</h3>
-        <h3>{{ surname }}</h3>
-        <button>Modifier</button>
-        <button>Supprimer</button>
+        <h3>{{ email }}</h3>
     </span>
 </template>
 

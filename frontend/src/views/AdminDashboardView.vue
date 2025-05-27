@@ -1,26 +1,29 @@
 <script setup>
 import UserListItem from '@/components/admin/UserListItem.vue';
-import { ref } from 'vue';
 
-const teachersFile = ref(null);
-const studentsFile = ref(null);
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
+
+function goToAddUser() {
+    router.push({ name: 'addUser' });
+}
 </script>
 
 <template>
   <h1>Admin vue</h1>
+  <button @click="goToAddUser" > Add Users </button>
   <div class="lists-container">
     <ul class="half-width">
       <h1> Teachers </h1>
-      <li><UserListItem name="Lucien" surname="Mousin"/></li>
-      <li><UserListItem name="Benjamin" surname="Weinberg"/></li>
-      <button> Add Teachers </button>
-    </ul>
-    <ul class="half-width">
+      <li><UserListItem email="lucien.mousin@example.com"/></li>
+      <li><UserListItem email="benjamin.weinberg@example.com"/></li>
+        </ul>
+        <ul class="half-width">
       <h1> Students </h1>
-      <li><UserListItem name="Carlos" surname="Okinda"/></li>
-      <li><UserListItem name="Lucas" surname="Petit"/></li>
-      <li><UserListItem name="Sophie" surname="Leroy"/></li>
-      <button> Add Students </button>
+      <li><UserListItem email="carlos.okinda@example.com"/></li>
+      <li><UserListItem email="lucas.petit@example.com"/></li>
+      <li><UserListItem email="sophie.leroy@example.com"/></li>
     </ul>
   </div>
 </template>

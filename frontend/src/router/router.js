@@ -9,6 +9,7 @@ import StudentDashboardView from '@/views/StudentDashboardView.vue';
 
 import CreateForm from '@/components/teacher/CreateForm.vue';
 import FillingForm from '@/components/student/FillingForm.vue';
+import AddUserItem from '@/components/admin/AddUserItem.vue';
 
 const routes = [
     {path: '/', name: 'home', component: HomeView},
@@ -19,6 +20,8 @@ const routes = [
     {path: '/student', name: 'student', component: StudentDashboardView},
     {path: '/teacher/createForm', name: 'createForm', component: CreateForm},
     {path: '/student/fillingForm', name: 'fillingForm', component: FillingForm},
+    {path: '/admin/addUser', name: 'addUser', component: AddUserItem},
+
 
 ];
 

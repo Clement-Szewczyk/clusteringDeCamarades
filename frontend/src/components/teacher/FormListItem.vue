@@ -3,12 +3,12 @@
 
 <template>
   <span>
-    <h3> titre </h3>
-    <p> description</p>
+    <h3> Title </h3>
+    <p> Description </p>
     <p> Created by: Teacher</p>
-    <p> Date de publication </p>
-    <button> Consulter </button>
-    <button> Publier </button>
+    <p> Publication date </p>
+    <button> Consult </button>
+    <button> Publish </button>
   </span>
 </template>
 

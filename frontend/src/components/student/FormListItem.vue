@@ -11,9 +11,9 @@ function goTofillingForm() {
 
 <template>
     <span>
-        <h2>titre</h2>
-        <p>description</p>
-        <button @click="goTofillingForm"> Participer </button>
+        <h2>Title </h2>
+        <p>Description</p>
+        <button @click="goTofillingForm"> Participate </button>
     </span>
 </template>
 
