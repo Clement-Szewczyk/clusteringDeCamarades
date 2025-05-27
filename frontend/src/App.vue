@@ -1,5 +1,4 @@
 <script setup>
-import { useRouter } from 'vue-router';
 import NavBar from './components/NavBar.vue';
 </script>
 
@@ -10,4 +9,5 @@ import NavBar from './components/NavBar.vue';
     <NavBar />
     <router-view />
   </main>
+  <RouterLink to="/admin">See admin page</RouterLink>
 </template>
