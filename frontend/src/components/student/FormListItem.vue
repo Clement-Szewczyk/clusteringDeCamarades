@@ -1,12 +1,19 @@
 <script setup>
-const props = defineProps({
-    email: String,
-});
+
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
+
+function goTofillingForm() {
+    router.push({ name: 'fillingForm' });
+} 
 </script>
 
 <template>
     <span>
-        <h3>{{ email }}</h3>
+        <h2>Title </h2>
+        <p>Description</p>
+        <button @click="goTofillingForm"> Participate </button>
     </span>
 </template>
 

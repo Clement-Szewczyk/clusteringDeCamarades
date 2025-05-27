@@ -1,13 +1,15 @@
 <script setup>
-const props = defineProps({
-    email: String,
-});
 </script>
 
 <template>
-    <span>
-        <h3>{{ email }}</h3>
-    </span>
+  <span>
+    <h3> Title </h3>
+    <p> Description </p>
+    <p> Created by: Teacher</p>
+    <p> Publication date </p>
+    <button> Consult </button>
+    <button> Publish </button>
+  </span>
 </template>
 
 <style scoped>
