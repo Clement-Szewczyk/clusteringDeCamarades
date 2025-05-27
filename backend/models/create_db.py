@@ -19,11 +19,13 @@ def init_db(app=None):
         
         # Create default roles
         admin_role = Role(role_name="admin")
-        teacher_role = Role(role_name="teacher")
+        teacher_role = Role(role_name="teacher") 
         student_role = Role(role_name="student")
         
         db.session.add_all([admin_role, teacher_role, student_role])
         db.session.commit()
+
+    
     
     print("Database initialized successfully")
 

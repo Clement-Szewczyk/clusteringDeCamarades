@@ -85,5 +85,15 @@ echo ========================================
 echo [APP] Starting Flask application...
 echo ========================================
 
-REM Launch app.py instead of opening a command prompt
-python app.py
+REM Launch app.py in background
+start "Flask API" python app.py
+
+REM Wait a bit for the server to start
+echo Waiting 5 seconds for the server to start...
+timeout /t 5 /nobreak
+
+REM Launch test.py in a new window
+echo ========================================
+echo [TESTS] Starting tests...
+echo ========================================
+start "API Tests" cmd /c "python add_role.py && echo. && echo Tests completed. Window will close in 10 seconds... && timeout /t 10 /nobreak"y && echo. && echo Tests completed. Window will close in 10 seconds... && timeout /t 10 /nobreak"
