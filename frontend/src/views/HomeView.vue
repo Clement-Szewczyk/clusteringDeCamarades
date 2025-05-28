@@ -9,6 +9,22 @@
             <RouterLink to="/teacher" class="dashboard-link teacher">Espace professeur</RouterLink>
             <RouterLink to="/student" class="dashboard-link student">Espace étudiant</RouterLink>
         </div>
+        
+        <div class="clustering-section">
+            <h2>Résultats de clustering récents</h2>
+            <p>Accédez directement aux résultats de clustering des formulaires récents :</p>
+            
+            <!-- Liste simplifiée des formulaires avec des résultats de clustering -->
+            <div class="recent-clustering-list">
+                <RouterLink to="/clustering/1" class="clustering-link">
+                    Résultats du formulaire 1
+                </RouterLink>
+                <RouterLink to="/clustering/2" class="clustering-link">
+                    Résultats du formulaire 2
+                </RouterLink>
+                <!-- Dans une version plus avancée, ces liens seraient générés dynamiquement -->
+            </div>
+        </div>
     </div>
 </template>
 
@@ -27,6 +43,13 @@ h1 {
   font-size: 2.5rem;
   color: #2c3e50;
   margin-bottom: 20px;
+}
+
+h2 {
+  font-size: 1.8rem;
+  color: #2c3e50;
+  margin-top: 40px;
+  margin-bottom: 15px;
 }
 
 .welcome-message {
@@ -68,6 +91,34 @@ h1 {
 
 .student {
   background-color: #27ae60;
+}
+
+.clustering-section {
+  margin-top: 50px;
+  padding-top: 30px;
+  border-top: 1px solid #eee;
+}
+
+.recent-clustering-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.clustering-link {
+  display: block;
+  padding: 12px;
+  background-color: #9b59b6;
+  color: white;
+  text-decoration: none;
+  border-radius: 6px;
+  transition: background-color 0.2s, transform 0.2s;
+}
+
+.clustering-link:hover {
+  background-color: #8e44ad;
+  transform: translateY(-2px);
 }
 
 @media (min-width: 768px) {

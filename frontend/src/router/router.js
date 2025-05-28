@@ -6,6 +6,7 @@ import SignupView from '@/views/SignupView.vue';
 import AdminDashboardView from '@/views/AdminDashboardView.vue';
 import TeacherDashboardView from '@/views/TeacherDashboardView.vue';
 import StudentDashboardView from '@/views/StudentDashboardView.vue';
+import ClusteringView from '@/views/ClusteringView.vue';
 
 import CreateForm from '@/components/teacher/CreateForm.vue';
 import FillingForm from '@/components/student/FillingForm.vue';
@@ -21,8 +22,7 @@ const routes = [
     {path: '/teacher/createForm', name: 'createForm', component: CreateForm},
     {path: '/student/fillingForm/:id', name: 'fillingForm', component: FillingForm},
     {path: '/admin/addUser', name: 'addUser', component: AddUserItem},
-
-
+    {path: '/clustering/:id', name: 'clustering', component: ClusteringView},
 ];
 
 const router = createRouter({

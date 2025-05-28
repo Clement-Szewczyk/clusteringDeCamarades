@@ -39,9 +39,19 @@ onMounted(async () => {
 </template>
 
 <style scoped>
+h1 {
+  color: #2c3e50;
+  margin-bottom: 10px;
+}
+
+p {
+  color: #7f8c8d;
+  margin-bottom: 30px;
+}
+
 .loading, .no-forms {
   padding: 15px;
-  margin: 10px 0;
+  margin: 20px 0;
   border-radius: 4px;
   text-align: center;
 }
@@ -60,5 +70,14 @@ onMounted(async () => {
 .formulars-list {
   list-style: none;
   padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+@media (max-width: 768px) {
+  .formulars-list {
+    grid-template-columns: 1fr;
+  }
 }
 </style>
