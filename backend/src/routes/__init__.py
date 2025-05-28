@@ -13,6 +13,7 @@ from .auth import registerAuthRoutes
 from .role import registerRoleRoutes
 from .formular import registerFormularRoutes
 from .vote import registerVoteRoutes
+from .clustering import registerClusteringRoutes
 
 def register_routes(app, api):
     """
@@ -32,4 +33,5 @@ def register_routes(app, api):
     registerRoleRoutes(api)
     registerFormularRoutes(api)
     registerVoteRoutes(api)
+    registerClusteringRoutes(api)
 
