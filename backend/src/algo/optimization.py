@@ -1,4 +1,3 @@
-# optimization.py
 """
 Module containing clustering algorithms and optimization functions.
 """

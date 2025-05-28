@@ -18,7 +18,6 @@ class FormularResource(Resource):
         """
         Create a new formular.
         """
-        print("TOTOOOOOOOOOOOOOOOOOOOOOO")
         return FormularService.create_formular()
     
     def put(self, formular_id):

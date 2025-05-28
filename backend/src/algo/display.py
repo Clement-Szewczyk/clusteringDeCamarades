@@ -1,4 +1,3 @@
-# display.py
 """
 Module for displaying results and generating detailed output.
 """

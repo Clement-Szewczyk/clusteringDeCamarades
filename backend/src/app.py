@@ -1,3 +1,11 @@
+"""
+Main Application Module.
+
+This module contains the Flask application factory and configuration setup.
+It initializes the application, registers routes, sets up error handlers,
+and provides utility functions for accessing the application instance.
+"""
+
 from flask import Flask, jsonify, redirect, current_app
 from flask_restful import Api
 from flask_cors import CORS
@@ -10,14 +18,27 @@ from dotenv import load_dotenv
 _app = None
 
 def get_app():
-    """Returns the application instance, useful for database operations outside request context"""
+    """
+    Returns the application instance, useful for database operations outside request context.
+    
+    Returns:
+        Flask: The Flask application instance
+    """
     global _app
     if _app is not None:
         return _app
     return current_app
 
 def create_app(config_name='default'):
-    """Application factory function"""
+    """
+    Application factory function that creates and configures the Flask application.
+    
+    Args:
+        config_name (str): The configuration to use ('development', 'testing', 'production')
+        
+    Returns:
+        Flask: The configured Flask application instance
+    """
     global _app
     
     load_dotenv()
@@ -49,10 +70,28 @@ def create_app(config_name='default'):
     # Register error handlers
     @app.errorhandler(404)
     def not_found(error):
+        """
+        Handle 404 Not Found errors.
+        
+        Args:
+            error: The error object
+            
+        Returns:
+            tuple: JSON response with error message and status code
+        """
         return jsonify({'error': 'Not found'}), 404
         
     @app.errorhandler(500)
     def server_error(error):
+        """
+        Handle 500 Server Error.
+        
+        Args:
+            error: The error object
+            
+        Returns:
+            tuple: JSON response with error message and status code
+        """
         return jsonify({'error': 'Server error'}), 500
     
         

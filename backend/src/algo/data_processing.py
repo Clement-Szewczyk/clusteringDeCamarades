@@ -1,4 +1,3 @@
-# data_processing.py
 """
 Module for reading and processing preference data from CSV files.
 Handles weighted voting system and affinity matrix creation.

@@ -1,4 +1,3 @@
-# config.py
 """
 Configuration module for the group clustering system.
 Contains all configurable parameters and settings.
