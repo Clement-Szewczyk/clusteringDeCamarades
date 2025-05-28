@@ -33,8 +33,10 @@ def displayDetailedResults(groups, satisfaction, rawScore, affinityMatrix, names
             sizeEmoji = "🟡"
         else:
             sizeEmoji = "🔴"
-            
-        print(f"{sizeEmoji} Group {idx}: {', '.join(members)} ({len(members)} people)")
+        
+        # Display shorter email names for readability
+        short_members = [member.split('@')[0] for member in members]    
+        print(f"{sizeEmoji} Group {idx}: {', '.join(short_members)} ({len(members)} people)")
         
         if len(members) >= 2:
             # Analyze affinities in the group
@@ -46,17 +48,21 @@ def displayDetailedResults(groups, satisfaction, rawScore, affinityMatrix, names
                     name1, name2 = members[i], members[j]
                     idx1, idx2 = namesIndex[name1], namesIndex[name2]
                     
+                    # Get short display names
+                    short_name1 = name1.split('@')[0]
+                    short_name2 = name2.split('@')[0]
+                    
                     affinity1To2 = affinityMatrix[idx1, idx2]
                     affinity2To1 = affinityMatrix[idx2, idx1]
                     totalGroupAffinity += affinity1To2 + affinity2To1
                     
                     if affinity1To2 > 0 or affinity2To1 > 0:
                         if affinity1To2 > 0 and affinity2To1 > 0:
-                            affinityDetails.append(f"     {name1} ↔ {name2} (mutual: {affinity1To2:.1f} ↔ {affinity2To1:.1f})")
+                            affinityDetails.append(f"     {short_name1} ↔ {short_name2} (mutual: {affinity1To2:.1f} ↔ {affinity2To1:.1f})")
                         elif affinity1To2 > 0:
-                            affinityDetails.append(f"     {name1} → {name2} ({affinity1To2:.1f})")
+                            affinityDetails.append(f"     {short_name1} → {short_name2} ({affinity1To2:.1f})")
                         else:
-                            affinityDetails.append(f"     {name2} → {name1} ({affinity2To1:.1f})")
+                            affinityDetails.append(f"     {short_name2} → {short_name1} ({affinity2To1:.1f})")
             
             if affinityDetails:
                 print(f"    Total affinity: {totalGroupAffinity:.1f}")

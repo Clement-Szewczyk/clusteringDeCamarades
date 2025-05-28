@@ -17,29 +17,32 @@ export const useAuthUserStore = defineStore('user', () => {
     }
     
     // Actions
-    async function signup(email, password, nom, prenom) {
-        try {
-            console.log("Trying to add user", { email, password, nom, prenom });
-            const response = await apiCluster.post('auth/register', { 
-                email: email,
-                password: password,
-                nom: nom,
-                prenom: prenom
-            });
-            console.log('User added:', response.data);
-            user.value = response.data;
-            // Sauvegarder l'utilisateur dans localStorage
-            localStorage.setItem('user', JSON.stringify(response.data));
-            // Sauvegarder le token s'il existe
-            if (response.data.token) {
-                localStorage.setItem('authToken', response.data.token);
-            }
-            return response.data;
-        } catch (error) {
-            console.error("Error adding user:", error.response?.data || error.message);
-            throw error;
+async function signup(email, password, nom, prenom) {
+    try {
+        const dataToSend = { 
+            email: email,
+            password: password,
+            nom: nom,
+            prenom: prenom
+        };
+        console.log("Données d'inscription à envoyer:", dataToSend);
+        
+        const response = await apiCluster.post('auth/register', dataToSend);
+        console.log('Réponse complète:', response);
+        
+        user.value = response.data.user || response.data;
+        localStorage.setItem('user', JSON.stringify(user.value));
+        
+        if (response.data.token) {
+            localStorage.setItem('authToken', response.data.token);
         }
+        
+        return user.value;
+    } catch (error) {
+        console.error("Error adding user:", error.response?.data || error);
+        throw error;
     }
+}
 
     // AuthUserStore.js
     async function login(email, password) {

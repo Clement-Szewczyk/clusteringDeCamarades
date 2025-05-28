@@ -36,8 +36,11 @@ async function signup() {
     }
     try {
         await authUserStore.signup(email.value, password.value, nom.value, prenom.value);
+        // Redirection simple vers la page d'accueil
+        router.push({ name: 'home' });
     } catch (error) {
-        errorMsg.value = "Failed to sign up";
+        console.error("Erreur détaillée:", error.response?.data || error);
+        errorMsg.value = error.response?.data?.error || "Échec de l'inscription: veuillez contacter l'administrateur";
     }
 }
 </script>
