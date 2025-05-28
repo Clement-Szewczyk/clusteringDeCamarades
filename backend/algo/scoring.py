@@ -1,4 +1,3 @@
-# scoring.py
 """
 Module for calculating satisfaction scores and evaluating group solutions.
 """

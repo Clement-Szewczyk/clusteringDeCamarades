@@ -1,4 +1,3 @@
-# main.py
 """
 Main execution module for the weighted voting group clustering system.
 """
