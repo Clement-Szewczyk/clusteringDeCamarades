@@ -1,3 +1,10 @@
+"""
+Teacher Service Module.
+
+This module provides services for managing teacher entities,
+including CRUD operations and batch processing capabilities.
+"""
+
 from flask import request, current_app
 from models.teacher import Teacher
 from extensions import db
@@ -5,23 +12,51 @@ import re
 from services.utils import ensure_app_context
 
 class TeacherService:
+    """
+    Service class for handling teacher-related operations.
+    
+    This class provides methods for teacher management including retrieving,
+    creating, updating, and deleting teacher records, as well as batch operations.
+    """
+    
     @staticmethod
     def validate_email(email):
-        """Validates email format"""
+        """
+        Validates email format using regex pattern.
+        
+        Args:
+            email (str): The email address to validate
+            
+        Returns:
+            bool: True if the email format is valid, False otherwise
+        """
         pattern = r'^[\w\.-]+@[\w\.-]+\.\w+$'
         return bool(re.match(pattern, email))
     
     @staticmethod
     @ensure_app_context
     def get_all_teachers():
-        """Retrieves all teachers"""
+        """
+        Retrieves all teachers from the database.
+        
+        Returns:
+            list: A list of dictionaries containing teacher information
+        """
         teachers = Teacher.query.all()
         return [teacher.to_dict() for teacher in teachers]
     
     @staticmethod
     @ensure_app_context
     def get_teacher(email):
-        """Retrieves a teacher by email"""
+        """
+        Retrieves a teacher by email address.
+        
+        Args:
+            email (str): The email address of the teacher to retrieve
+            
+        Returns:
+            dict: The teacher data if found, None otherwise
+        """
         teacher = Teacher.query.get(email)
         if teacher:
             return teacher.to_dict()
@@ -29,7 +64,19 @@ class TeacherService:
     
     @staticmethod
     def create_teacher():
-        """Creates a new teacher"""
+        """
+        Creates a new teacher based on the request data.
+        
+        Expects a JSON body with 'email' field.
+        
+        Returns:
+            tuple: A tuple containing (response_data, status_code)
+            - response_data is either the new teacher data or an error message
+            - status_code is the HTTP status code (201 for success)
+            
+        Raises:
+            Exception: If database operations fail
+        """
         data = request.get_json()
         
         if not data or 'email' not in data:
@@ -58,7 +105,19 @@ class TeacherService:
     
     @staticmethod
     def create_teachers_batch():
-        """Creates multiple teachers in a single request"""
+        """
+        Creates multiple teachers in a single request.
+        
+        Expects a JSON array of objects, each with an 'email' field.
+        
+        Returns:
+            tuple: A tuple containing (response_data, status_code)
+            - response_data includes lists of successful and failed operations
+            - status_code is the HTTP status code (207 for partial success)
+            
+        Raises:
+            Exception: If database operations fail completely
+        """
         data = request.get_json()
         
         if not isinstance(data, list):
@@ -110,7 +169,20 @@ class TeacherService:
     @staticmethod
     @ensure_app_context
     def update_teacher(email):
-        """Updates an existing teacher"""
+        """
+        Updates an existing teacher identified by email.
+        
+        Args:
+            email (str): The email address of the teacher to update
+            
+        Returns:
+            tuple: A tuple containing (response_data, status_code)
+            - response_data is either the updated teacher data or an error message
+            - status_code is the HTTP status code (200 for success, 404 if not found)
+            
+        Raises:
+            Exception: If database operations fail
+        """
         data = request.get_json()
         
         if not data or 'email' not in data:
@@ -149,7 +221,20 @@ class TeacherService:
     @staticmethod
     @ensure_app_context
     def delete_teacher(email):
-        """Deletes a teacher by email"""
+        """
+        Deletes a teacher by email.
+        
+        Args:
+            email (str): The email address of the teacher to delete
+            
+        Returns:
+            tuple: A tuple containing (response_data, status_code)
+            - response_data is a success or error message
+            - status_code is the HTTP status code (204 for success, 404 if not found)
+            
+        Raises:
+            Exception: If database operations fail
+        """
         teacher = Teacher.query.get(email)
         if not teacher:
             return {'error': 'Teacher not found'}, 404

@@ -1,3 +1,10 @@
+"""
+Student Service Module.
+
+This module provides services for managing student entities,
+including CRUD operations and batch processing capabilities.
+"""
+
 from flask import request, current_app
 from models.student import Student
 from extensions import db
@@ -5,23 +12,51 @@ import re
 from services.utils import ensure_app_context
 
 class StudentService:
+    """
+    Service class for handling student-related operations.
+    
+    This class provides methods for student management including retrieving,
+    creating, updating, and deleting student records, as well as batch operations.
+    """
+    
     @staticmethod
     def validate_email(email):
-        """Validates email format"""
+        """
+        Validates email format using regex pattern.
+        
+        Args:
+            email (str): The email address to validate
+            
+        Returns:
+            bool: True if the email format is valid, False otherwise
+        """
         pattern = r'^[\w\.-]+@[\w\.-]+\.\w+$'
         return bool(re.match(pattern, email))
     
     @staticmethod
     @ensure_app_context
     def get_all_students():
-        """Retrieves all students"""
+        """
+        Retrieves all students from the database.
+        
+        Returns:
+            list: A list of dictionaries containing student information
+        """
         students = Student.query.all()
         return [student.to_dict() for student in students]
     
     @staticmethod
     @ensure_app_context
     def get_student(student_id):
-        """Retrieves a student by ID"""
+        """
+        Retrieves a student by ID.
+        
+        Args:
+            student_id (int): The ID of the student to retrieve
+            
+        Returns:
+            dict: The student data if found, None otherwise
+        """
         student = Student.query.get(student_id)
         if student:
             return student.to_dict()
@@ -29,7 +64,19 @@ class StudentService:
     
     @staticmethod
     def create_student():
-        """Create a new student"""
+        """
+        Creates a new student based on the request data.
+        
+        Expects a JSON body with 'email' field.
+        
+        Returns:
+            tuple: A tuple containing (response_data, status_code)
+            - response_data is either the new student data or an error message
+            - status_code is the HTTP status code (201 for success)
+            
+        Raises:
+            Exception: If database operations fail
+        """
         data = request.get_json()
         
         if not data or 'email' not in data:
@@ -58,7 +105,19 @@ class StudentService:
     
     @staticmethod
     def create_students_batch():
-        """Creates several students in a single request"""
+        """
+        Creates multiple students in a single request.
+        
+        Expects a JSON array of objects, each with an 'email' field.
+        
+        Returns:
+            tuple: A tuple containing (response_data, status_code)
+            - response_data includes lists of successful and failed operations
+            - status_code is the HTTP status code (207 for partial success)
+            
+        Raises:
+            Exception: If database operations fail completely
+        """
         data = request.get_json()
         
         if not isinstance(data, list):
@@ -111,7 +170,20 @@ class StudentService:
     @staticmethod
     @ensure_app_context
     def update_student(student_id):
-        """Update an existing student"""
+        """
+        Updates an existing student identified by ID.
+        
+        Args:
+            student_id (int): The ID of the student to update
+            
+        Returns:
+            tuple: A tuple containing (response_data, status_code)
+            - response_data is either the updated student data or an error message
+            - status_code is the HTTP status code (200 for success, 404 if not found)
+            
+        Raises:
+            Exception: If database operations fail
+        """
         data = request.get_json()
         
         if not data or 'email' not in data:
@@ -145,7 +217,20 @@ class StudentService:
     @staticmethod
     @ensure_app_context
     def delete_student(student_id):
-        """Deletes a student by ID"""
+        """
+        Deletes a student by ID.
+        
+        Args:
+            student_id (int): The ID of the student to delete
+            
+        Returns:
+            tuple: A tuple containing (response_data, status_code)
+            - response_data is a success or error message
+            - status_code is the HTTP status code (204 for success, 404 if not found)
+            
+        Raises:
+            Exception: If database operations fail
+        """
         student = Student.query.get(student_id)
         if not student:
             return {'error': 'Student not found'}, 404
