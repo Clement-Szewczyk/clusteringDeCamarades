@@ -1,74 +1,80 @@
+<script setup>
+import UserListItem from '@/components/admin/UserListItem.vue';
+import { useStudentStore } from '@/store/StudentStore';
+import { useTeacherStore } from '@/store/TeacherStore';
+import VoteList from '@/components/student/VoteList.vue';
+
+import { useRouter } from 'vue-router';
+import { onMounted, ref } from 'vue';
+
+const router = useRouter();
+
+const studentStore = useStudentStore();
+const teacherStore = useTeacherStore();
+
+function goToAddUser() {
+    router.push({ name: 'addUser' });
+}
+
+onMounted(async () => {
+    try {
+        console.log("Fetching students...");
+        console.log("Fetching teachers...");
+        await studentStore.fetchStudents();
+        await teacherStore.fetchTeachers();
+    } catch (err) {
+      console.error("Error fetching students & teachers:", err);
+    }
+});
+</script>
+
+<template>
+  <h1>Admin vue</h1>
+  <button @click="goToAddUser">Add Users</button>
+  <div class="lists-container">
+    <ul class="half-width">
+      <h1>Teachers</h1>
+      <li v-for="teacher in teacherStore.teachers" :key="teacher.id">
+        <UserListItem :email="teacher.teacher_email" />
+      </li>
+    </ul>
+    
+    <ul class="half-width">
+      <h1>Students</h1>
+      <li v-for="student in studentStore.students" :key="student.id">
+        <UserListItem :email="student.student_email" />
+      </li>
+    </ul>
+  </div>
+  <VoteList />
+</template>
+
 <style scoped>
-h1 {
-  color: #2c3e50;
-  margin-bottom: 20px;
-}
-
-button {
-  background-color: #3498db;
-  color: white;
-  padding: 10px 15px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 16px;
-  margin-bottom: 20px;
-  transition: background-color 0.2s;
-}
-
-button:hover {
-  background-color: #2980b9;
-}
-
 .lists-container {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
-  margin-top: 30px;
+    display: flex;
+    flex-direction: row;
+    width: 100%;
 }
-
 .half-width {
-  flex: 1;
-  min-width: 300px;
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  padding: 20px;
-  margin-bottom: 20px;
+    width: 50%;
+    list-style: none;
+    padding: 20px;
+    margin: 0;
 }
-
-.half-width h1 {
-  font-size: 1.5rem;
-  margin-top: 0;
-  padding-bottom: 10px;
-  border-bottom: 1px solid #eee;
-}
-
-li {
-  padding: 8px 0;
-  border-bottom: 1px solid #f0f0f0;
-}
-
 .loading, .error, .no-data {
-  padding: 15px;
-  margin: 10px 0;
-  border-radius: 4px;
-  text-align: center;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 4px;
 }
-
 .loading {
-  background-color: #f5f5f5;
-  color: #666;
+    background-color: #f5f5f5;
 }
-
 .error {
-  background-color: #fadbd8;
-  color: #c0392b;
+    background-color: #ffeeee;
+    color: #cc0000;
 }
-
 .no-data {
-  background-color: #f9f9f9;
-  color: #7f8c8d;
-  font-style: italic;
+    background-color: #f0f0f0;
+    font-style: italic;
 }
 </style>
