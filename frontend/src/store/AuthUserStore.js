@@ -6,7 +6,6 @@ export const useAuthUserStore = defineStore('user', () => {
     // State
     const user = ref(null);
     
-    // Initialiser l'utilisateur depuis le localStorage au chargement
     const storedUser = localStorage.getItem('user');
     if (storedUser) {
         try {
@@ -54,7 +53,6 @@ async function signup(email, password, nom, prenom) {
         });
         console.log('User logged in:', response.data);
         
-        // Stocker le token dans localStorage pour les requêtes futures
         if (response.data.token) {
             localStorage.setItem('authToken', response.data.token);
         }
@@ -68,14 +66,11 @@ async function signup(email, password, nom, prenom) {
         throw error;
     }
 }
-    
-    // Fonction pour vérifier si l'utilisateur est connecté
-    function isLoggedIn() {
+        function isLoggedIn() {
         return !!user.value;
 
     }
     
-    // Fonction pour déconnecter l'utilisateur
     function logout() {
         user.value = null;
         localStorage.removeItem('user');

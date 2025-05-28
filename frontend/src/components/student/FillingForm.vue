@@ -97,15 +97,12 @@ onMounted(async () => {
       return;
     }
     
-    // Récupérer tous les étudiants inscrits
     await studentStore.fetchStudents();
     
-    // Filtrer uniquement les étudiants qui ont un compte (qui sont inscrits)
     students.value = studentStore.students.filter(s => 
-      // Filtrer les étudiants qui ont un compte (email valide) et qui ne sont pas l'utilisateur actuel
       s.student_email && 
       s.student_email !== authStore.user.email &&
-      s.student_id // S'assurer qu'ils ont un ID valide
+      s.student_id
     );
     
     console.log("Étudiants disponibles pour le vote:", students.value);
@@ -115,7 +112,6 @@ onMounted(async () => {
       return;
     }
     
-    // Initialiser l'attribution de points à 0 pour chaque étudiant
     students.value.forEach(student => {
       pointsAssignment.value[student.student_id] = 0;
     });
@@ -131,19 +127,14 @@ onMounted(async () => {
 
 <template>
   <div class="filling-form">
-    <!-- État de chargement -->
     <div v-if="loading" class="loading">
       Chargement du formulaire...
     </div>
-    
-    <!-- Message d'erreur -->
     <div v-else-if="error" class="error">
       {{ error }}
     </div>
     
-    <!-- Formulaire -->
     <div v-else>
-      <!-- Détails du formulaire -->
       <div class="form-header">
         <h1>{{ title }}</h1>
         <p class="description">{{ description }}</p>
@@ -160,7 +151,6 @@ onMounted(async () => {
         </p>
       </div>
       
-      <!-- Liste des étudiants avec attribution de points -->
       <form @submit.prevent="submitForm">
         <div class="students-list">
           <div v-for="student in students" :key="student.student_id" class="student-item">

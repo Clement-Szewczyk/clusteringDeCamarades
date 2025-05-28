@@ -14,7 +14,6 @@
             <h2>Résultats de clustering récents</h2>
             <p>Accédez directement aux résultats de clustering des formulaires récents :</p>
             
-            <!-- Liste simplifiée des formulaires avec des résultats de clustering -->
             <div class="recent-clustering-list">
                 <RouterLink to="/clustering/1" class="clustering-link">
                     Résultats du formulaire 1
@@ -22,7 +21,6 @@
                 <RouterLink to="/clustering/2" class="clustering-link">
                     Résultats du formulaire 2
                 </RouterLink>
-                <!-- Dans une version plus avancée, ces liens seraient générés dynamiquement -->
             </div>
         </div>
     </div>

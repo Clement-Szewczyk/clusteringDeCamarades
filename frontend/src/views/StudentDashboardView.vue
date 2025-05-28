@@ -31,7 +31,6 @@ onMounted(async () => {
   
   <ul v-else class="formulars-list">
     <li v-for="formular in formularStore.formulars" :key="formular.formular_id">
-      <!-- Utiliser la même approche que dans TeacherDashboardView -->
       <FormListItem :formular="formular" />
     </li>
   </ul>

@@ -14,7 +14,6 @@ async function handleLogin() {
     try {
         console.log('Email:', email.value);
         await authStore.login(email.value, password.value);
-        // Redirection simple vers la page d'accueil
         router.push({ name: 'home' });
     } catch(error) {
         errorMsg.value = "Échec de connexion: " + (error.message || "Veuillez vérifier vos identifiants");

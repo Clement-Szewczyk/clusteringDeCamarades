@@ -41,7 +41,6 @@ async function generateClusters() {
     
     await clusteringStore.generateClusters(id.value);
     
-    // Naviguer vers la page des résultats
     router.push({ 
       name: 'clustering', 
       params: { id: id.value }
