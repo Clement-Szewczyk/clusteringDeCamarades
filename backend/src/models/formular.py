@@ -10,7 +10,7 @@ class Formular(db.Model):
     formular_creator = db.Column(db.Integer, db.ForeignKey('auth_user.auth_user_id'), nullable=False)
     formular_start = db.Column(db.DateTime, nullable=False)
     formular_end = db.Column(db.DateTime, nullable=False)
-    formular_nb_vote_per_person = db.Column(db.Integer, nullable=False)
+    formular_nb_person_group = db.Column(db.Integer, nullable=False)
     
     # Relationships
     votes = db.relationship('Vote', backref='formular', lazy=True)
@@ -26,5 +26,5 @@ class Formular(db.Model):
             'formular_creator': self.formular_creator,
             'formular_start': self.formular_start.isoformat(),
             'formular_end': self.formular_end.isoformat(),
-            'formular_nb_person_group': self.formular_nb_vote_per_person
+            'formular_nb_person_group': self.formular_nb_person_group
         }

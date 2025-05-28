@@ -16,3 +16,4 @@ def register_routes(app, api):
     registerAuthRoutes(api)
     registerRoleRoutes(api)
     registerFormularRoutes(api)
+
