@@ -1,19 +1,22 @@
 <script setup>
 import { ref } from 'vue';
 import { useStudentStore } from '@/store/StudentStore';
+import { useTeacherStore } from '@/store/TeacherStore';
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
 const studentStore = useStudentStore();
+const teacherStore = useTeacherStore();
 const email = ref('');
 const role = ref('student');
 
 async function addUser() {
-    if (role.value === 'student') {
+    if (role.value == 'student') {
         studentStore.addStudent(email.value)
         router.push('/admin');
     } else {
-        console.log('Ajout de professeur non implémenté');
+        teacherStore.addTeacher(email.value)
+        router.push('/admin');
     }
 }
 </script>
