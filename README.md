@@ -132,6 +132,14 @@ Cette capacité d’adaptation nous a permis de proposer une solution fidèle au
 
 ---
 
+## Architecture
+
+L'architecture de notre application de clustering de camarades suit une approche modulaire bien structurée. Le cœur du système repose sur un **backend** qui centralise la logique métier, incluant l'API, les tests et les algorithmes de clustering. Ce backend s'appuie sur une **database** pour stocker et gérer les données de l'application, tandis qu'un dossier **docs** contient toute la documentation technique et les guides utilisateur.
+
+Le **frontend** constitue l'interface utilisateur avec ses assets, composants, vues, système de routage, store et API. L'ensemble est orchestré par un fichier **README.md** qui fournit la documentation générale du projet, et un script **start.bat** qui permet de lancer facilement l'application.
+
+Cette séparation claire entre les couches (présentation, logique métier, données et documentation) garantit une maintenabilité optimale et facilite le développement collaboratif, tout en permettant une évolutivité future du système de formation de groupes d'étudiants.
+
 ## Fonctionnement de l’algorithme
 
 Notre algorithme repose sur un système de **vote pondéré** dans lequel chaque étudiant dispose de **100 points** à répartir entre ses camarades, dans le but de **former des groupes optimaux**. L’objectif principal est de **maximiser la satisfaction globale**, tout en respectant une **équité des tailles de groupes**.
