@@ -1,132 +1,69 @@
 import requests
 
-# Test single student creation
-def test_add_single_student():
+def test_ajout():
+
     url = "http://localhost:5000/students"
-    data = {"email": "student@example.com"}
-    
-    print("Testing single student creation...")
-    response = requests.post(url, json=data)
+    student_data = {
+        "email": "test@example.com",
+    }
+    print("\nTesting student addition...")
+    response = requests.post(url, json=student_data)
     print(f"Status code: {response.status_code}")
-    
-    try:
-        print(f"Response JSON: {response.json()}")
-    except Exception as e:
-        print(f"Error decoding JSON: {e}")
-        print(f"Response text: {response.text}")
-    
-    return response.json().get('id') if response.status_code == 201 else None
+    print(f"Response: {response.json()}")
+    return response.status_code == 201
 
-# Test batch student creation
-def test_add_multiple_students():
-    url = "http://localhost:5000/students/batch"
-    data = [
-        {"email": "student1@example.com"},
-        {"email": "student2@example.com"},
-        {"email": "invalid-email"},  # Should fail validation
-        {"email": "student3@example.com"}
-    ]
+def add_role(role_name):
+    """Add a role to the database"""
+    url = "http://localhost:5000/roles"
+    role_data = {
+        "role_name": role_name
+    }
     
-    print("\nTesting batch student creation...")
-    response = requests.post(url, json=data)
+    print(f"\nTesting adding role '{role_name}'...")
+    response = requests.post(url, json=role_data)
     print(f"Status code: {response.status_code}")
+    print(f"Response: {response.json()}")
     
-    try:
-        print(f"Response JSON: {response.json()}")
-    except Exception as e:
-        print(f"Error decoding JSON: {e}")
-        print(f"Response text: {response.text}")
+    return response.status_code == 201
 
-# Test retrieving all students
-def test_get_all_students():
-    url = "http://localhost:5000/students"
+
+def test_register():
+    """Test user registration functionality"""
+    url = "http://localhost:5000/auth/register"
+    user_data = {
+        "email": "test@example.com",
+        "password": "Password123",
+        "nom": "Test",
+        "prenom": "User"
+    }
     
-    print("\nTesting get all students...")
-    response = requests.get(url)
+    print("\nTesting registration...")
+    response = requests.post(url, json=user_data)
     print(f"Status code: {response.status_code}")
+    print(f"Response: {response.json()}")
     
-    try:
-        students = response.json()
-        print(f"Number of students retrieved: {len(students)}")
-        if students:
-            print("First few students:")
-            for student in students[:3]:
-                print(f"  - {student}")
-    except Exception as e:
-        print(f"Error decoding JSON: {e}")
-        print(f"Response text: {response.text}")
-    
-    return students[0]['id'] if students and len(students) > 0 else None
+    return response.status_code == 201
 
-# Test updating a student
-def test_update_student(student_id):
-    if not student_id:
-        print("\nSkipping update test - no student ID available")
-        return
+def test_login():
+    """Test user login functionality"""
+    url = "http://localhost:5000/auth/login"
+    credentials = {
+        "email": "test@example.com",
+        "password": "Password123"
+    }
     
-    url = f"http://localhost:5000/students/{student_id}"
-    data = {"email": f"updated{student_id}@example.com"}
-    
-    print(f"\nTesting student update for ID {student_id}...")
-    response = requests.put(url, json=data)
+    print("\nTesting login...")
+    response = requests.post(url, json=credentials)
     print(f"Status code: {response.status_code}")
+    print(f"Response: {response.json()}")
     
-    try:
-        print(f"Response JSON: {response.json()}")
-    except Exception as e:
-        print(f"Error decoding JSON: {e}")
-        print(f"Response text: {response.text}")
-
-# Test deleting a student
-def test_delete_student():
-    # First create a student to delete
-    url = "http://localhost:5000/students"
-    data = {"email": "to-be-deleted@example.com"}
-    
-    print("\nCreating a student to delete...")
-    response = requests.post(url, json=data)
-    
-    student_id = None
-    if response.status_code == 201:
-        try:
-            student_id = response.json().get('id')
-            print(f"Created student with ID {student_id}")
-        except:
-            print("Failed to get student ID from response")
-            return
-    else:
-        print(f"Failed to create student - Status code: {response.status_code}")
-        return
-    
-    # Now delete the student
-    delete_url = f"http://localhost:5000/students/{student_id}"
-    print(f"\nTesting student deletion for ID {student_id}...")
-    delete_response = requests.delete(delete_url)
-    print(f"Delete status code: {delete_response.status_code}")
-    
-    if delete_response.status_code == 204:
-        print("Student deleted successfully (204 No Content)")
-    else:
-        try:
-            print(f"Response JSON: {delete_response.json()}")
-        except Exception as e:
-            print(f"Error decoding JSON: {e}")
-            print(f"Response text: {delete_response.text}")
-    
-    # Verify deletion by trying to retrieve the student
-    get_response = requests.get(delete_url)
-    if get_response.status_code == 404:
-        print("Verification successful: Student no longer exists (404 Not Found)")
-    else:
-        print(f"Verification failed - Status code: {get_response.status_code}")
+    return response.status_code == 200
 
 if __name__ == "__main__":
-    created_id = test_add_single_student()
-    test_add_multiple_students()
-    existing_id = test_get_all_students()
-    
-    # Use an existing ID for update test
-    test_update_student(existing_id or created_id)
-    
-    # Test deletion
-    test_delete_student()
+    # Run the authentication tests
+    #test_ajout()
+    #add_role("admin")
+    #add_role("teacher")
+    #add_role("student")
+    #test_register()
+    test_login()

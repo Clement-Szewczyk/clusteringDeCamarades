@@ -45,6 +45,7 @@ def create_app(config_name='default'):
     with app.app_context():
         db.create_all()
 
+
     # Register error handlers
     @app.errorhandler(404)
     def not_found(error):
@@ -54,6 +55,7 @@ def create_app(config_name='default'):
     def server_error(error):
         return jsonify({'error': 'Server error'}), 500
     
+        
     return app
 
 if __name__ == '__main__':
