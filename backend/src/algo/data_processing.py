@@ -11,7 +11,9 @@ from config import EXCLUSIONS, TOTAL_POINTS, MUTUAL_BONUS, UNILATERAL_WEIGHT
 def readPreferences(csvFile):
     """Reading and processing preferences from CSV with weighted voting system."""
     df = pd.read_csv(csvFile)
-    names = [name for name in df["nom"].tolist() if name not in EXCLUSIONS]
+    
+    # Extract emails from the "nom" column
+    names = [email for email in df["nom"].tolist() if email not in EXCLUSIONS]
     namesIndex = {name: i for i, name in enumerate(names)}
     n = len(names)
     
@@ -22,10 +24,10 @@ def readPreferences(csvFile):
     affinity = np.zeros((n, n), dtype=float)
     
     for _, row in df.iterrows():
-        name = row["nom"]
-        if name in EXCLUSIONS or name not in namesIndex:
+        email = row["nom"]
+        if email in EXCLUSIONS or email not in namesIndex:
             continue
-        i = namesIndex[name]
+        i = namesIndex[email]
         
         # Verify that points sum to 100 (or close to it, allowing small rounding errors)
         totalPoints = 0
@@ -33,7 +35,7 @@ def readPreferences(csvFile):
         
         for choiceCol in choiceColumns:
             if pd.notna(row[choiceCol]) and row[choiceCol] > 0:
-                classmate = choiceCol  # Column name is the classmate's name
+                classmate = choiceCol  # Column name is the classmate's email
                 points = row[choiceCol]
                 totalPoints += points
                 if classmate in namesIndex:
@@ -41,7 +43,7 @@ def readPreferences(csvFile):
         
         # Warn if points don't sum to 100 (allowing 1 point tolerance for rounding)
         if abs(totalPoints - TOTAL_POINTS) > 1:
-            print(f"Warning: {name} distributed {totalPoints} points instead of {TOTAL_POINTS}")
+            print(f"Warning: {email} distributed {totalPoints} points instead of {TOTAL_POINTS}")
         
         # Normalize points to ensure they sum to 100
         if totalPoints > 0:

@@ -1,5 +1,10 @@
 import requests
 from datetime import datetime, timedelta
+import os
+import sys
+
+# Add the backend/src directory to the Python path so we can import modules
+sys.path.append(os.path.join(os.path.dirname(__file__), 'backend', 'src'))
 
 def test_ajout():
 
@@ -95,6 +100,17 @@ def test_create_formular():
     return response.status_code == 201, response.json().get('formular_id')
 
 
+def test_clustering_algorithm():
+    """Test the clustering algorithm with the CSV file"""
+    from algo.main import main
+    
+    print("\nTesting clustering algorithm...")
+    try:
+        main()
+        return True
+    except Exception as e:
+        print(f"Error running clustering algorithm: {e}")
+        return False
 
 
 
@@ -111,3 +127,6 @@ if __name__ == "__main__":
     # Test formular functionality
     success, formular_id = test_create_formular()
     print("formulaire ")
+    
+    # Test clustering algorithm
+    test_clustering_algorithm()
