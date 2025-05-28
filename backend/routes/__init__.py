@@ -4,12 +4,13 @@
 from .hello_world import registerHelloWorldRoutes
 from .student import registerStudentRoutes
 from .teacher import registerTeacherRoutes
-
+from .auth import registerAuthRoutes
+from .role import registerRoleRoutes
 
 def register_routes(app, api):
     """Register all API routes"""
     registerHelloWorldRoutes(api)
     registerStudentRoutes(api)
     registerTeacherRoutes(api)
-
-
+    registerAuthRoutes(api)
+    registerRoleRoutes(api)
