@@ -26,5 +26,5 @@ class Formular(db.Model):
             'formular_creator': self.formular_creator,
             'formular_start': self.formular_start.isoformat(),
             'formular_end': self.formular_end.isoformat(),
-            'formular_nb_vote_per_person': self.formular_nb_vote_per_person
+            'formular_nb_person_group': self.formular_nb_vote_per_person
         }
