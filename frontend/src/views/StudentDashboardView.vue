@@ -1,6 +1,7 @@
 <script setup>
 import FormListItem from '@/components/student/FormListItem.vue';
 import { useFormularStore } from '@/store/FormularStore';
+import VoteList from '@/components/student/VoteList.vue';
 import { onMounted } from 'vue';
 
 const formularStore = useFormularStore();
@@ -34,6 +35,7 @@ onMounted(async () => {
       <FormListItem :formular="formular" />
     </li>
   </ul>
+<VoteList :formularId="selectedFormularId" />
 </template>
 
 <style scoped>

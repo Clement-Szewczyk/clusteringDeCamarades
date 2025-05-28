@@ -2,6 +2,7 @@
 import UserListItem from '@/components/admin/UserListItem.vue';
 import { useStudentStore } from '@/store/StudentStore';
 import { useTeacherStore } from '@/store/TeacherStore';
+import VoteList from '@/components/student/VoteList.vue';
 
 import { useRouter } from 'vue-router';
 import { onMounted, ref } from 'vue';
@@ -45,6 +46,7 @@ onMounted(async () => {
       </li>
     </ul>
   </div>
+  <VoteList />
 </template>
 
 <style scoped>

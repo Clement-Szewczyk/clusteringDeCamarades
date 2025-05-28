@@ -19,7 +19,7 @@ const routes = [
     {path: '/teacher', name: 'teacher', component: TeacherDashboardView},
     {path: '/student', name: 'student', component: StudentDashboardView},
     {path: '/teacher/createForm', name: 'createForm', component: CreateForm},
-    {path: '/student/fillingForm', name: 'fillingForm', component: FillingForm},
+    {path: '/student/fillingForm/:id', name: 'fillingForm', component: FillingForm},
     {path: '/admin/addUser', name: 'addUser', component: AddUserItem},
 
 

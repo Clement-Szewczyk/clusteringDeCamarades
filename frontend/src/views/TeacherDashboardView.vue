@@ -2,6 +2,7 @@
 import FormListItem from '@/components/teacher/FormListItem.vue';
 import { useFormularStore } from '@/store/FormularStore';
 import { useAuthUserStore } from '@/store/AuthUserStore';
+import VoteList from '@/components/student/VoteList.vue';
 import { useRouter } from 'vue-router';
 import { onMounted } from 'vue';
 
@@ -42,6 +43,7 @@ onMounted(async () => {
       </li>
     </ul>
   </div>
+<VoteList :formularId="selectedFormularId" />
 </template>
 
 <style scoped>
