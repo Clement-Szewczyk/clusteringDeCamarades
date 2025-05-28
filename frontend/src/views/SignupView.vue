@@ -4,7 +4,7 @@ import { ref, onMounted } from 'vue'
 import { useStudentStore } from '@/store/StudentStore'
 import { useTeacherStore } from '@/store/TeacherStore'
 import { useAuthUserStore } from '@/store/AuthUserStore'
-import { all } from 'axios'
+
 
 const studentStore = useStudentStore()
 const teacherStore = useTeacherStore()
@@ -31,13 +31,13 @@ onMounted(async () => {
 async function signup() {
     errorMsg.value = '';
     if (!allowedEmails.value.includes(email.value)) {
-        errorMsg.value = "Email not authorized for signup.";
+        errorMsg.value = "Invalid email, contact administrator";
         return;
     }
     try {
         await authUserStore.signup(email.value, password.value, nom.value, prenom.value);
     } catch (error) {
-        errorMsg.value = error.response?.data?.error || "Failed to register. Please try again.";
+        errorMsg.value = "Failed to sign up";
     }
 }
 </script>
@@ -61,7 +61,7 @@ async function signup() {
             <input id="password" v-model="password" type="password" required />
         </div>
         <button type="submit">Sign up</button>
-        <p v-if="errorMsg" style="color:red">{{ errorMsg }}</p>
+        <p v-if="errorMsg">{{ errorMsg }}</p>
     </form>
     <p>If you already have an account, please log in</p>
     <router-link to="/login">Log in</router-link>
