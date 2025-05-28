@@ -1,6 +1,11 @@
 # Clustering de Camarades
 
-Ce projet a été réalisé dans le cadre de la box certificative finale de Licence 3 Sciences du Numérique.  
+Ce projet a été réalisé dans le cadre de la box certificative finale de Licence 3 Sciences du Numérique. Il a été réalisé par :
+
+- Laurency Yuna
+- Stievenard Emma
+- Szewczyk Clément
+
 Il s'agit d'une **application web complète** permettant de former automatiquement des groupes de travail entre étudiants, en fonction des **affinités qu’ils expriment entre eux**.
 
 Le but principal est de proposer une **répartition optimale et équitable** des étudiants, grâce à un algorithme de clustering personnalisé.  
