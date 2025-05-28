@@ -3,10 +3,10 @@ import { useRouter } from 'vue-router';
 import { defineProps, computed } from 'vue';
 
 const props = defineProps({
-  formular: {
-    type: Object,
-    required: true
-  }
+    formular: {
+        type: Object,
+        required: true
+    }
 });
 
 const router = useRouter();

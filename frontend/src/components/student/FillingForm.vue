@@ -97,10 +97,23 @@ onMounted(async () => {
       return;
     }
     
+    // Récupérer tous les étudiants inscrits
     await studentStore.fetchStudents();
+    
+    // Filtrer uniquement les étudiants qui ont un compte (qui sont inscrits)
     students.value = studentStore.students.filter(s => 
-      s.student_email !== authStore.user.email
+      // Filtrer les étudiants qui ont un compte (email valide) et qui ne sont pas l'utilisateur actuel
+      s.student_email && 
+      s.student_email !== authStore.user.email &&
+      s.student_id // S'assurer qu'ils ont un ID valide
     );
+    
+    console.log("Étudiants disponibles pour le vote:", students.value);
+    
+    if (students.value.length === 0) {
+      error.value = "Aucun autre étudiant inscrit n'est disponible pour le vote.";
+      return;
+    }
     
     // Initialiser l'attribution de points à 0 pour chaque étudiant
     students.value.forEach(student => {
