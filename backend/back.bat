@@ -96,4 +96,4 @@ REM Launch test.py in a new window
 echo ========================================
 echo [ADD DATA]  Add data ...
 echo ========================================
-start "API data" cmd /c "python src/add_data.py && echo. && echo add Data completed. Window will close in 20 seconds... && timeout /t 20 /nobreak"y && echo. && echo Add data completed. Window will close in 20 seconds... && timeout /t 20 /nobreak"
+start "API data" cmd /c "python src/add_data.py && echo. && echo Add data completed. Window will close in 20 seconds... && timeout /t 20 /nobreak"

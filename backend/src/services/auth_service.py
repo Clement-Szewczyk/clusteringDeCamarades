@@ -1,3 +1,11 @@
+"""
+Authentication Service Module.
+
+This module provides authentication services including user registration, 
+login functionality, and token generation for secure API access. It also handles
+validation of user credentials and email formats.
+"""
+
 from flask import request, current_app, jsonify
 import jwt
 from datetime import datetime, timedelta
@@ -9,33 +17,44 @@ from models.user_role import UserRole
 from extensions import db
 import re
 from werkzeug.security import generate_password_hash, check_password_hash
+from services.utils import ensure_app_context
 
 class AuthService:
-    @staticmethod
-    def _ensure_app_context(func):
-        """Decorator to ensure database operations run in an app context"""
-        def wrapper(*args, **kwargs):
-            try:
-                # Check if we're already in an app context
-                current_app._get_current_object()
-                return func(*args, **kwargs)
-            except RuntimeError:
-                # If not, get the app and create a context
-                from app import get_app
-                app = get_app()
-                with app.app_context():
-                    return func(*args, **kwargs)
-        return wrapper
-
+    """
+    Service class for authentication related operations.
+    
+    This class provides methods for user registration, login, and credential validation,
+    as well as JWT token generation for authenticated sessions.
+    """
+    
     @staticmethod
     def validate_email(email):
-        """Validates email format"""
+        """
+        Validates email format using regex pattern.
+        
+        Args:
+            email (str): The email address to validate
+            
+        Returns:
+            bool: True if the email format is valid, False otherwise
+        """
         pattern = r'^[\w\.-]+@[\w\.-]+\.\w+$'
         return bool(re.match(pattern, email))
     
     @staticmethod
     def validate_password(password):
-        """Validates password strength"""
+        """
+        Validates password strength requirements.
+        
+        Checks for minimum length of 8 characters, and presence of at least
+        one uppercase letter, one lowercase letter, and one number.
+        
+        Args:
+            password (str): The password to validate
+            
+        Returns:
+            bool: True if the password meets strength requirements, False otherwise
+        """
         # At least 8 characters, 1 uppercase, 1 lowercase, 1 number
         if len(password) < 8:
             return False
@@ -48,9 +67,23 @@ class AuthService:
         return True
     
     @staticmethod
-    @_ensure_app_context
+    @ensure_app_context
     def register():
-        """Register a new user if their email exists in student/teacher tables"""
+        """
+        Registers a new user if their email exists in student/teacher tables.
+        
+        Validates required fields, email format, and password strength.
+        Checks if the user is authorized to register based on their email.
+        Creates a new user with the appropriate role.
+        
+        Returns:
+            tuple: A tuple containing (response_data, status_code)
+            - response_data contains user information or error message
+            - status_code is the HTTP status code (201 for success)
+            
+        Raises:
+            Exception: If database operations fail
+        """
         data = request.get_json()
         
         # Validate required fields
@@ -126,9 +159,22 @@ class AuthService:
             return {'error': f'Failed to register user: {str(e)}'}, 500
     
     @staticmethod
-    @_ensure_app_context
+    @ensure_app_context
     def login():
-        """Login a user"""
+        """
+        Authenticates a user and generates a JWT token.
+        
+        Validates credentials, generates a JWT token with user information and expiration,
+        and returns user details along with the token.
+        
+        Returns:
+            tuple: A tuple containing (response_data, status_code)
+            - response_data contains the token, expiration, and user information
+            - status_code is the HTTP status code (200 for success, 401 for invalid credentials)
+            
+        Raises:
+            Exception: If authentication process fails
+        """
         try: 
             data = request.get_json()
             

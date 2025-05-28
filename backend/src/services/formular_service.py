@@ -1,42 +1,68 @@
+"""
+Formular Service Module.
+
+This module provides services for managing formular (form) entities,
+including CRUD operations and teacher-specific form retrievals.
+A formular represents a voting form that teachers can create for students.
+"""
+
 from flask import request, current_app
 from models.formular import Formular
 from extensions import db
 from datetime import datetime
+from services.utils import ensure_app_context
 
 class FormularService:
-    @staticmethod
-    def _ensure_app_context(func):
-        """Decorator to ensure database operations run in an app context"""
-        def wrapper(*args, **kwargs):
-            try:
-                # Check if we're already in an app context
-                current_app._get_current_object()
-                return func(*args, **kwargs)
-            except RuntimeError:
-                # If not, get the app and create a context
-                from app import get_app
-                app = get_app()
-                with app.app_context():
-                    return func(*args, **kwargs)
-        return wrapper
+    """
+    Service class for handling formular-related operations.
+    
+    This class provides methods for formular management including creating,
+    retrieving, updating, and deleting formular records.
+    """
     
     @staticmethod
-    @_ensure_app_context
+    @ensure_app_context
     def get_all_formular():
-        """Retrieves all formulars"""
+        """
+        Retrieves all formulars from the database.
+        
+        Returns:
+            list: A list of dictionaries containing formular information
+        """
         formulars = Formular.query.all()
         return [formular.to_dict() for formular in formulars]
     
     @staticmethod
-    @_ensure_app_context
+    @ensure_app_context
     def get_all_teacher_formular(teacher_id):
-        """Retrieves all formulars created by a specific teacher"""
+        """
+        Retrieves all formulars created by a specific teacher.
+        
+        Args:
+            teacher_id (int): The ID of the teacher
+            
+        Returns:
+            list: A list of dictionaries containing the teacher's formulars
+        """
         formulars = Formular.query.filter_by(formular_creator=teacher_id).all()
         return [formular.to_dict() for formular in formulars]
 
     @staticmethod
     def create_formular():
-        """Creates a new formular"""
+        """
+        Creates a new formular based on the request data.
+        
+        Expects a JSON body with 'title', 'description', 'creator_id',
+        'end_date', and 'nb_person_group' fields.
+        
+        Returns:
+            tuple: A tuple containing (response_data, status_code)
+            - response_data is either the new formular data or an error message
+            - status_code is the HTTP status code (201 for success)
+            
+        Raises:
+            Exception: If database operations fail
+        """
         data = request.get_json()
         
         if not data:
@@ -70,18 +96,39 @@ class FormularService:
             return {'error': f'Failed to create formular: {str(e)}'}, 500
     
     @staticmethod
-    @_ensure_app_context
+    @ensure_app_context
     def get_formular(formular_id):
-        """Retrieves a formular by ID"""
+        """
+        Retrieves a formular by ID.
+        
+        Args:
+            formular_id (int): The ID of the formular to retrieve
+            
+        Returns:
+            dict: The formular data if found, None otherwise
+        """
         formular = Formular.query.get(formular_id)
         if formular:
             return formular.to_dict()
         return None
     
     @staticmethod
-    @_ensure_app_context
+    @ensure_app_context
     def update_formular(formular_id):
-        """Updates an existing formular"""
+        """
+        Updates an existing formular identified by ID.
+        
+        Args:
+            formular_id (int): The ID of the formular to update
+            
+        Returns:
+            tuple: A tuple containing (response_data, status_code)
+            - response_data is either the updated formular data or an error message
+            - status_code is the HTTP status code (200 for success, 404 if not found)
+            
+        Raises:
+            Exception: If database operations fail
+        """
         data = request.get_json()
         
         if not data:
@@ -109,9 +156,22 @@ class FormularService:
             return {'error': f'Failed to update formular: {str(e)}'}, 500
     
     @staticmethod
-    @_ensure_app_context
+    @ensure_app_context
     def delete_formular(formular_id):
-        """Deletes a formular by ID"""
+        """
+        Deletes a formular by ID.
+        
+        Args:
+            formular_id (int): The ID of the formular to delete
+            
+        Returns:
+            tuple: A tuple containing (response_data, status_code)
+            - response_data is a success or error message
+            - status_code is the HTTP status code (204 for success, 404 if not found)
+            
+        Raises:
+            Exception: If database operations fail
+        """
         formular = Formular.query.get(formular_id)
         if not formular:
             return {'error': 'Formular not found'}, 404
