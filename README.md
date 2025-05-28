@@ -76,6 +76,43 @@ Nous avons hésité entre **Flask** et **FastAPI**, deux frameworks Python moder
 
 ---
 
+## Installation et démarrage
+
+Pour installer et démarrer l'application de clustering de camarades, suivez les étapes ci-dessous :
+
+### Prérequis
+- **Python 3.11** : Assurez-vous d'avoir Python installé sur votre machine.
+- **Node.js 14+** : Nécessaire pour le frontend Vue.js.
+- **MySQL** : Installez MySQL pour la base de données.
+
+### Étapes d'installation
+
+1. **Cloner le dépôt**
+   ```
+   git clone https://github.com/Clement-Szewczyk/clusteringDeCamarades
+   cd clusteringDeCamarades
+   ```
+
+2. **Installer et démarrer le backend**
+   ```
+   cd backend
+   pip install -r requirements.txt
+   python src/app.py
+   ```
+
+3. **Installer et démarrer le frontend**
+   ```
+   cd ../frontend
+   npm install
+   npm run dev
+   ```
+
+4. **Alternative : Utiliser le script de démarrage rapide**
+   ```
+   ./start.bat
+   ```
+
+
 ## Interprétation du sujet
 
 Le sujet "Clustering de Camarades" propose de développer une application capable de générer automatiquement des groupes de travail à partir des affinités exprimées entre étudiants via un formulaire.  
@@ -145,6 +182,13 @@ Le **frontend** constitue l'interface utilisateur avec ses assets, composants, v
 
 Cette séparation claire entre les couches (présentation, logique métier, données et documentation) garantit une maintenabilité optimale et facilite le développement collaboratif, tout en permettant une évolutivité future du système de formation de groupes d'étudiants.
 
+- **Backend** : Contient l'API, les tests et l'algorithme de clustering.
+- **Docs** : Documentation technique et guides utilisateur.
+- **Frontend** : Interface utilisateur avec assets, composants, vues, routing et store.
+- `README.md` : Documentation générale du projet.
+- `start.bat` : Script pour démarrer l'application.
+
+
 ## Fonctionnement de l’algorithme
 
 Notre algorithme repose sur un système de **vote pondéré** dans lequel chaque étudiant dispose de **100 points** à répartir entre ses camarades, dans le but de **former des groupes optimaux**. L’objectif principal est de **maximiser la satisfaction globale**, tout en respectant une **équité des tailles de groupes**.
@@ -198,7 +242,7 @@ Max = C(n,2) × 2 × 100 × 1.5 = (n×(n−1)/2) × 300
 | 4      | 1800          |
 | 5      | 3000          |
 
-## 3. Satisfaction globale
+### 3. Satisfaction globale
 
 ```
 Satisfaction = Score_total / Score_max_possible
@@ -210,14 +254,14 @@ Satisfaction = Score_total / Score_max_possible
 - Groupe 2 : 800 / 3000
 - Satisfaction globale = (1200 + 800) / (3000 + 3000) = 33.3%
 
-## 4. Bonus d'affinité mutuelle
+### 4. Bonus d'affinité mutuelle
 
 Les votes réciproques sont valorisés :
 
 - Bonus de ×1.5 appliqué aux affinités mutuelles
 - Encourage la coopération bilatérale
 
-## 5. Optimisation locale
+### 5. Optimisation locale
 
 L'algorithme tente d'échanger des membres entre groupes :
 
@@ -232,7 +276,7 @@ if gain_affinity > 0 or gain_equity > seuil:
 - 50 itérations atteintes
 - Convergence du score
 
-## 6. Score global
+### 6. Score global
 
 ```
 Score_global = Équité × 100 + Satisfaction × 10
@@ -243,7 +287,7 @@ L'équité est prioritaire :
 - Un groupe mal équilibré coûte -100 points
 - Il faut +10% de satisfaction pour compenser
 
-## 7. Étapes de l'algorithme
+### 7. Étapes de l'algorithme
 
 **Prétraitement :**
 
@@ -285,3 +329,30 @@ L'équité est prioritaire :
 **Satisfaction :** 348.75 / 1800 = 19.4%
 
 Ce fonctionnement garantit une répartition cohérente, équitable et personnalisée des étudiants, respectant à la fois leurs préférences et les contraintes pédagogiques.
+
+## Fonctionnalités à développer
+
+L'application peut être enrichie de plusieurs fonctionnalités pour améliorer l'expérience utilisateur et la gestion des groupes. Voici les principales fonctionnalités prévues :
+
+### Tests et optimisation de l'algorithme
+- Les tests approfondis de l'algorithme de clustering 
+- Des visualisations avancées pour l'analyse des groupes formés
+
+### Interface utilisateur
+- Amélioration de la délimitation des espaces par rôle (étudiant/enseignant/administrateur)
+- Finalisation complète de la liaison entre l'API backend et le frontend
+- Ajout de thèmes visuels et modes d'affichage alternatifs
+
+### Gestion des votes
+- Amélioration du système de récupération et d'affichage des votes
+- Possibilité de modifier ses votes jusqu'à la date limite
+- Statistiques en temps réel sur la participation au vote
+- Visualisation des tendances et des affinités mutuelles
+
+### Autres fonctionnalités prévues
+- Export des groupes en différents formats (PDF, Excel, CSV)
+- Système de notifications pour les événements importants
+- Module d'analyse de l'historique des groupes précédents
+- Journal d'activité pour les administrateurs
+
+

@@ -4,7 +4,7 @@ Contains all configurable parameters and settings.
 """
 
 # Configurable parameters
-GROUP_SIZE = 5  # M people per group 
+GROUP_SIZE = 3  # M people per group 
 TOTAL_POINTS = 100  # Total points to distribute per student
 EXCLUSIONS = set()  # List of excluded names (e.g., absent students)
 
