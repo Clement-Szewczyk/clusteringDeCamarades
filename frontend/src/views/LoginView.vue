@@ -1,12 +1,23 @@
 <script setup>
 import { ref } from 'vue'
+import { useAuthUserStore } from '@/store/AuthUserStore'
+import { useRouter } from 'vue-router'
+
+const router = useRouter();
+const authStore = useAuthUserStore();
 
 const email = ref('')
 const password = ref('')
 
-function handleLogin() {
-    console.log('Email:', email.value)
-    console.log('Password:', password.value)
+async function handleLogin() {
+    try{
+        console.log('Email:', email.value);
+        await authStore.login(email.value, password.value);
+        router.push('student');
+    }catch{
+
+    }
+
 }
 </script>
 
