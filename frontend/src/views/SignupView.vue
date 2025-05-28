@@ -1,20 +1,44 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+
+import { useStudentStore } from '@/store/StudentStore'
+import { useTeacherStore } from '@/store/TeacherStore'
+import { useAuthUserStore } from '@/store/AuthUserStore'
+
+
+const studentStore = useStudentStore()
+const teacherStore = useTeacherStore()
+const authUserStore = useAuthUserStore()
 
 const email = ref('')
 const nom = ref('')
 const prenom = ref('')
-const role = ref('students')
 const password = ref('')
+const errorMsg = ref('')
 
-function signup() {
-    console.log({
-        email: email.value,
-        nom: nom.value,
-        prenom: prenom.value,
-        role: role.value,
-        password: password.value
-    })
+const allowedEmails = ref([])
+
+onMounted(async () => {
+    await studentStore.fetchStudents()
+    await teacherStore.fetchTeachers()
+    const studentEmails = studentStore.students.map(s => s.student_email)
+    const teacherEmails = teacherStore.teachers.map(t => t.teacher_email)
+    allowedEmails.value = [...studentEmails, ...teacherEmails]
+    console.log(allowedEmails.value)
+})
+
+
+async function signup() {
+    errorMsg.value = '';
+    if (!allowedEmails.value.includes(email.value)) {
+        errorMsg.value = "Invalid email, contact administrator";
+        return;
+    }
+    try {
+        await authUserStore.signup(email.value, password.value, nom.value, prenom.value);
+    } catch (error) {
+        errorMsg.value = "Failed to sign up";
+    }
 }
 </script>
 
@@ -33,17 +57,11 @@ function signup() {
             <input id="prenom" v-model="prenom" type="text" required />
         </div>
         <div>
-            <label for="role">Role :</label>
-            <select id="role" v-model="role" required>
-                <option value="teachers">Teacher</option>
-                <option value="students">Student</option>
-            </select>
-        </div>
-        <div>
             <label for="password">Password :</label>
             <input id="password" v-model="password" type="password" required />
         </div>
         <button type="submit">Sign up</button>
+        <p v-if="errorMsg">{{ errorMsg }}</p>
     </form>
     <p>If you already have an account, please log in</p>
     <router-link to="/login">Log in</router-link>
