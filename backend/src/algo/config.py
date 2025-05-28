@@ -9,7 +9,7 @@ TOTAL_POINTS = 100  # Total points to distribute per student
 EXCLUSIONS = set()  # List of excluded names (e.g., absent students)
 
 # File paths
-CSV_FILE_PATH = "c:/Users/user/Downloads/Classeur1.csv"  # Updated path to the downloaded CSV
+CSV_FILE_PATH = "data.csv"  # Path to the CSV file containing student data
 
 # Algorithm parameters
 MAX_ATTEMPTS = 10  # Number of different initialization strategies
