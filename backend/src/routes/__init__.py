@@ -6,6 +6,8 @@ from .student import registerStudentRoutes
 from .teacher import registerTeacherRoutes
 from .auth import registerAuthRoutes
 from .role import registerRoleRoutes
+from .formular import registerFormularRoutes
+from .vote import registerVoteRoutes
 
 def register_routes(app, api):
     """Register all API routes"""
@@ -14,3 +16,6 @@ def register_routes(app, api):
     registerTeacherRoutes(api)
     registerAuthRoutes(api)
     registerRoleRoutes(api)
+    registerFormularRoutes(api)
+    registerVoteRoutes(api)
+
