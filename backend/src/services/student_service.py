@@ -144,7 +144,7 @@ class StudentService:
             return {'error': 'Student not found'}, 404
         
         # Check if the email already exists for another student
-        existing_student = Student.query.filter(Student.student_email == email, Student.id != student_id).first()
+        existing_student = Student.query.filter(Student.student_email == email, Student.student_id != student_id).first()
         if existing_student:
             return {'error': 'Another student with this email already exists'}, 409
         
