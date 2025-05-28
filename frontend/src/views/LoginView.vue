@@ -8,16 +8,17 @@ const authStore = useAuthUserStore();
 
 const email = ref('')
 const password = ref('')
+const errorMsg = ref('')
 
 async function handleLogin() {
-    try{
+    try {
         console.log('Email:', email.value);
         await authStore.login(email.value, password.value);
-        router.push('student');
-    }catch{
-
+        // Redirection simple vers la page d'accueil
+        router.push({ name: 'home' });
+    } catch(error) {
+        errorMsg.value = "Échec de connexion: " + (error.message || "Veuillez vérifier vos identifiants");
     }
-
 }
 </script>
 
@@ -34,7 +35,15 @@ async function handleLogin() {
             <input id="password" v-model="password" type="password" required />
         </div>
         <button type="submit">Log in</button>
+        <div v-if="errorMsg" class="error-message">{{ errorMsg }}</div>
     </form>
     <p> If you don't have an account, please sign up. </p>
     <router-link to="/signup">Sign up</router-link>
 </template>
+
+<style scoped>
+.error-message {
+    color: red;
+    margin-top: 10px;
+}
+</style>
