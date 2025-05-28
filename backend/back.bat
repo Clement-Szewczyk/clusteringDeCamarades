@@ -86,7 +86,7 @@ echo [APP] Starting Flask application...
 echo ========================================
 
 REM Launch app.py in background
-start "Flask API" python app.py
+start "Flask API" python src/app.py
 
 REM Wait a bit for the server to start
 echo Waiting 5 seconds for the server to start...
@@ -96,4 +96,4 @@ REM Launch test.py in a new window
 echo ========================================
 echo [TESTS] Starting tests...
 echo ========================================
-start "API Tests" cmd /c "python add_role.py && echo. && echo Tests completed. Window will close in 10 seconds... && timeout /t 10 /nobreak"y && echo. && echo Tests completed. Window will close in 10 seconds... && timeout /t 10 /nobreak"
+start "API Tests" cmd /c "python src/add_role.py && echo. && echo Tests completed. Window will close in 10 seconds... && timeout /t 10 /nobreak"y && echo. && echo Tests completed. Window will close in 10 seconds... && timeout /t 10 /nobreak"
