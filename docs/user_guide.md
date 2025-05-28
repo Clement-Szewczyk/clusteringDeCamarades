@@ -9,7 +9,7 @@ Ce guide vous aidera à utiliser l'application Clustering de Camarades, qui perm
 3. [Guide de l'administrateur](#guide-de-ladministrateur)
 4. [Guide de l'enseignant](#guide-de-lenseignant)
 5. [Guide de l'étudiant](#guide-de-létudiant)
-6. [Dépannage](#dépannage)
+
 
 ## Installation
 
@@ -69,20 +69,18 @@ En tant qu'administrateur, vous pouvez gérer les utilisateurs de la plateforme.
 
 ### Ajouter des utilisateurs
 
-1. Connectez-vous avec un compte administrateur
-2. Naviguez vers "Administration" sur la page d'accueil
-3. Cliquez sur "Ajouter un utilisateur"
-4. Saisissez l'email de l'utilisateur
-5. Sélectionnez le rôle (étudiant ou enseignant)
-6. Cliquez sur "Soumettre"
+1. Sur la page d'accueil, cliquez sur le bouton "Administrateur"
+2. Cliquez sur "Ajouter un utilisateur"
+3. Saisissez l'email de l'utilisateur
+4. Sélectionnez le rôle (étudiant ou enseignant)
+5. Cliquez sur "Soumettre"
 
 L'utilisateur pourra ensuite s'inscrire avec cet email.
 
 ### Gérer les utilisateurs existants
 
 La page d'administration affiche la liste des étudiants et des enseignants. Vous pouvez:
-- Voir les détails de chaque utilisateur
-- Supprimer des utilisateurs si nécessaire
+- Voir les détails de chaque utilisateure
 
 ## Guide de l'enseignant
 
@@ -134,29 +132,5 @@ En tant qu'étudiant, vous pouvez participer aux votes et consulter vos groupes.
    - Les autres membres du groupe
    - Les informations de contact
 
-## Dépannage
 
-### Je n'arrive pas à m'inscrire
 
-Vérifiez que:
-- Votre email a bien été ajouté par un administrateur
-- Vous utilisez exactement le même email que celui ajouté
-- Votre mot de passe respecte les critères de sécurité (8 caractères minimum, avec au moins une majuscule, une minuscule et un chiffre)
-
-### Le formulaire n'apparaît pas pour les étudiants
-
-Vérifiez que:
-- Le formulaire a bien été créé
-- La date de fin n'est pas dépassée
-- Les étudiants ont bien été ajoutés dans le système
-
-### L'algorithme de clustering ne donne pas de résultats satisfaisants
-
-Essayez de:
-- Vérifier que suffisamment d'étudiants ont participé au vote
-- Ajuster le nombre d'étudiants par groupe
-- Exécuter l'algorithme plusieurs fois pour obtenir différentes propositions
-
----
-
-Si vous rencontrez d'autres problèmes, veuillez contacter l'équipe de support à support@clustering-camarades.com.

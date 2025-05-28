@@ -75,6 +75,20 @@ Nous avons hésité entre **Flask** et **FastAPI**, deux frameworks Python moder
 - Pygame est plus orienté jeux que applications métiers.
 
 ---
+## Architecture
+
+L'architecture de notre application de clustering de camarades suit une approche modulaire bien structurée. Le cœur du système repose sur un **backend** qui centralise la logique métier, incluant l'API, les tests et les algorithmes de clustering. Ce backend s'appuie sur une **database** pour stocker et gérer les données de l'application, tandis qu'un dossier **docs** contient toute la documentation technique et les guides utilisateur.
+
+Le **frontend** constitue l'interface utilisateur avec ses assets, composants, vues, système de routage, store et API. L'ensemble est orchestré par un fichier **README.md** qui fournit la documentation générale du projet, et un script **start.bat** qui permet de lancer facilement l'application.
+
+Cette séparation claire entre les couches (présentation, logique métier, données et documentation) garantit une maintenabilité optimale et facilite le développement collaboratif, tout en permettant une évolutivité future du système de formation de groupes d'étudiants.
+
+- **Backend** : Contient l'API, les tests et l'algorithme de clustering.
+- **Docs** : Documentation technique et guides utilisateur.
+- **Frontend** : Interface utilisateur avec assets, composants, vues, routing et store.
+- `README.md` : Documentation générale du projet.
+- `start.bat` : Script pour démarrer l'application.
+
 
 ## Installation et démarrage
 
@@ -96,6 +110,8 @@ Pour installer et démarrer l'application de clustering de camarades, suivez les
 2. **Installer et démarrer le backend**
    ```
    cd backend
+   python -m venv venv
+   venv\Scripts\activate
    pip install -r requirements.txt
    python src/app.py
    ```
@@ -111,6 +127,32 @@ Pour installer et démarrer l'application de clustering de camarades, suivez les
    ```
    ./start.bat
    ```
+
+### Exécution des tests 
+
+Pour exécuter les tests unitaires du backend, utilisez la commande suivante dans le dossier `backend` et que le terminal soit dans l'environnement virtuel activé :
+
+```python -m pytest
+```
+
+### Tester l'algorithme de clustering
+
+Pour exécuter les tests unitaires du backend, utilisez la commande suivante dans le dossier `backend\src\algo` et que le terminal soit dans l'environnement virtuel activé :
+
+```python
+python main.py
+```
+
+Vous pouvez modifier les paramètres dans le fichier `config.py` pour tester différents scénarios de clustering.
+
+### Test fonctionnalité api 
+
+UN fichier python permet de tester toute les fonctionnalités de l'API. A la racine du projet :
+
+```	
+python test.py
+```
+
 
 
 ## Interprétation du sujet
@@ -173,20 +215,6 @@ Notre interprétation du sujet, y compris l’ajustement du jour 2, nous a pouss
 Cette capacité d’adaptation nous a permis de proposer une solution fidèle aux nouvelles exigences du sujet, tout en conservant une architecture claire, modulaire et testable.
 
 ---
-
-## Architecture
-
-L'architecture de notre application de clustering de camarades suit une approche modulaire bien structurée. Le cœur du système repose sur un **backend** qui centralise la logique métier, incluant l'API, les tests et les algorithmes de clustering. Ce backend s'appuie sur une **database** pour stocker et gérer les données de l'application, tandis qu'un dossier **docs** contient toute la documentation technique et les guides utilisateur.
-
-Le **frontend** constitue l'interface utilisateur avec ses assets, composants, vues, système de routage, store et API. L'ensemble est orchestré par un fichier **README.md** qui fournit la documentation générale du projet, et un script **start.bat** qui permet de lancer facilement l'application.
-
-Cette séparation claire entre les couches (présentation, logique métier, données et documentation) garantit une maintenabilité optimale et facilite le développement collaboratif, tout en permettant une évolutivité future du système de formation de groupes d'étudiants.
-
-- **Backend** : Contient l'API, les tests et l'algorithme de clustering.
-- **Docs** : Documentation technique et guides utilisateur.
-- **Frontend** : Interface utilisateur avec assets, composants, vues, routing et store.
-- `README.md` : Documentation générale du projet.
-- `start.bat` : Script pour démarrer l'application.
 
 
 ## Fonctionnement de l’algorithme
