@@ -94,6 +94,6 @@ timeout /t 5 /nobreak
 
 REM Launch test.py in a new window
 echo ========================================
-echo [TESTS] Starting tests...
+echo [ADD DATA]  Add data ...
 echo ========================================
-start "API Tests" cmd /c "python src/add_role.py && echo. && echo Tests completed. Window will close in 10 seconds... && timeout /t 10 /nobreak"y && echo. && echo Tests completed. Window will close in 10 seconds... && timeout /t 10 /nobreak"
+start "API data" cmd /c "python src/add_data.py && echo. && echo add Data completed. Window will close in 20 seconds... && timeout /t 20 /nobreak"y && echo. && echo Add data completed. Window will close in 20 seconds... && timeout /t 20 /nobreak"
