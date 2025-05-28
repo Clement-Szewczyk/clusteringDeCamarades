@@ -54,14 +54,10 @@ export const useFormularStore = defineStore('formular', () => {
             if (!authStore.user) {
                 throw new Error('User not authenticated');
             }
-            
-            // Formatage de la date pour être compatible avec Python
             let formattedEndDate;
             if (formData.endDate instanceof Date) {
-                // Format YYYY-MM-DDTHH:MM:SS sans le 'Z' à la fin
                 formattedEndDate = formData.endDate.toISOString().split('.')[0];
             } else {
-                // Si c'est déjà une chaîne, éliminer la partie milliseconde et le 'Z'
                 formattedEndDate = formData.endDate.split('.')[0];
             }
             
@@ -92,37 +88,6 @@ export const useFormularStore = defineStore('formular', () => {
             throw error;
         }
     }
-    
-    async function updateFormular(formularId, formData) {
-        try {
-            console.log(`Updating formular ${formularId}:`, formData);
-            const response = await apiCluster.put(`formulars/${formularId}`, formData);
-            
-            console.log('Formular updated:', response.data);
-            const index = formulars.value.findIndex(f => f.formular_id === formularId);
-            if (index !== -1) {
-                formulars.value[index] = response.data;
-            }
-            return response.data;
-        } catch (error) {
-            console.error("Error updating formular:", error);
-            throw error;
-        }
-    }
-    
-    async function deleteFormular(formularId) {
-        try {
-            console.log(`Deleting formular ${formularId}`);
-            await apiCluster.delete(`formulars/${formularId}`);
-            
-            formulars.value = formulars.value.filter(f => f.formular_id !== formularId);
-            console.log('Formular deleted successfully');
-            return true;
-        } catch (error) {
-            console.error("Error deleting formular:", error);
-            throw error;
-        }
-    }
 
     return {
         formulars,
@@ -131,7 +96,5 @@ export const useFormularStore = defineStore('formular', () => {
         fetchTeacherFormulars,
         fetchCurrentTeacherFormulars,
         createFormular,
-        updateFormular,
-        deleteFormular
     };
 });
