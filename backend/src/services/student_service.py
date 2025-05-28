@@ -2,39 +2,24 @@ from flask import request, current_app
 from models.student import Student
 from extensions import db
 import re
+from services.utils import ensure_app_context
 
 class StudentService:
     @staticmethod
-    def _ensure_app_context(func):
-        """Decorator to ensure database operations run in an app context"""
-        def wrapper(*args, **kwargs):
-            try:
-                # Check if we're already in an app context
-                current_app._get_current_object()
-                return func(*args, **kwargs)
-            except RuntimeError:
-                # If not, get the app and create a context
-                from app import get_app
-                app = get_app()
-                with app.app_context():
-                    return func(*args, **kwargs)
-        return wrapper
-    
-    @staticmethod
     def validate_email(email):
-        """Validates the email format"""
+        """Validates email format"""
         pattern = r'^[\w\.-]+@[\w\.-]+\.\w+$'
         return bool(re.match(pattern, email))
     
     @staticmethod
-    @_ensure_app_context
+    @ensure_app_context
     def get_all_students():
         """Retrieves all students"""
         students = Student.query.all()
         return [student.to_dict() for student in students]
     
     @staticmethod
-    @_ensure_app_context
+    @ensure_app_context
     def get_student(student_id):
         """Retrieves a student by ID"""
         student = Student.query.get(student_id)
@@ -124,7 +109,7 @@ class StudentService:
         return results, 207 if results['failed'] else 201
     
     @staticmethod
-    @_ensure_app_context
+    @ensure_app_context
     def update_student(student_id):
         """Update an existing student"""
         data = request.get_json()
@@ -158,7 +143,7 @@ class StudentService:
             return {'error': f'Failed to update student: {str(e)}'}, 500
     
     @staticmethod
-    @_ensure_app_context
+    @ensure_app_context
     def delete_student(student_id):
         """Deletes a student by ID"""
         student = Student.query.get(student_id)

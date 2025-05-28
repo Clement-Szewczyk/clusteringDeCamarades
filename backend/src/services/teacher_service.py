@@ -2,24 +2,9 @@ from flask import request, current_app
 from models.teacher import Teacher
 from extensions import db
 import re
+from services.utils import ensure_app_context
 
 class TeacherService:
-    @staticmethod
-    def _ensure_app_context(func):
-        """Decorator to ensure database operations run in an app context"""
-        def wrapper(*args, **kwargs):
-            try:
-                # Check if we're already in an app context
-                current_app._get_current_object()
-                return func(*args, **kwargs)
-            except RuntimeError:
-                # If not, get the app and create a context
-                from app import get_app
-                app = get_app()
-                with app.app_context():
-                    return func(*args, **kwargs)
-        return wrapper
-    
     @staticmethod
     def validate_email(email):
         """Validates email format"""
@@ -27,14 +12,14 @@ class TeacherService:
         return bool(re.match(pattern, email))
     
     @staticmethod
-    @_ensure_app_context
+    @ensure_app_context
     def get_all_teachers():
         """Retrieves all teachers"""
         teachers = Teacher.query.all()
         return [teacher.to_dict() for teacher in teachers]
     
     @staticmethod
-    @_ensure_app_context
+    @ensure_app_context
     def get_teacher(email):
         """Retrieves a teacher by email"""
         teacher = Teacher.query.get(email)
@@ -123,7 +108,7 @@ class TeacherService:
         return results, 207 if results['failed'] else 201
     
     @staticmethod
-    @_ensure_app_context
+    @ensure_app_context
     def update_teacher(email):
         """Updates an existing teacher"""
         data = request.get_json()
@@ -162,7 +147,7 @@ class TeacherService:
             return {'error': f'Failed to update teacher: {str(e)}'}, 500
     
     @staticmethod
-    @_ensure_app_context
+    @ensure_app_context
     def delete_teacher(email):
         """Deletes a teacher by email"""
         teacher = Teacher.query.get(email)

@@ -9,24 +9,9 @@ from models.user_role import UserRole
 from extensions import db
 import re
 from werkzeug.security import generate_password_hash, check_password_hash
+from services.utils import ensure_app_context
 
 class AuthService:
-    @staticmethod
-    def _ensure_app_context(func):
-        """Decorator to ensure database operations run in an app context"""
-        def wrapper(*args, **kwargs):
-            try:
-                # Check if we're already in an app context
-                current_app._get_current_object()
-                return func(*args, **kwargs)
-            except RuntimeError:
-                # If not, get the app and create a context
-                from app import get_app
-                app = get_app()
-                with app.app_context():
-                    return func(*args, **kwargs)
-        return wrapper
-
     @staticmethod
     def validate_email(email):
         """Validates email format"""
@@ -48,7 +33,7 @@ class AuthService:
         return True
     
     @staticmethod
-    @_ensure_app_context
+    @ensure_app_context
     def register():
         """Register a new user if their email exists in student/teacher tables"""
         data = request.get_json()
@@ -126,7 +111,7 @@ class AuthService:
             return {'error': f'Failed to register user: {str(e)}'}, 500
     
     @staticmethod
-    @_ensure_app_context
+    @ensure_app_context
     def login():
         """Login a user"""
         try: 

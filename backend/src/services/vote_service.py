@@ -1,40 +1,25 @@
 from flask import request, current_app
 from models.vote import Vote
 from extensions import db
+from services.utils import ensure_app_context
 
 class VoteService:
     @staticmethod
-    def _ensure_app_context(func):
-        """Decorator to ensure database operations run in an app context"""
-        def wrapper(*args, **kwargs):
-            try:
-                # Check if we're already in an app context
-                current_app._get_current_object()
-                return func(*args, **kwargs)
-            except RuntimeError:
-                # If not, get the app and create a context
-                from app import get_app
-                app = get_app()
-                with app.app_context():
-                    return func(*args, **kwargs)
-        return wrapper
-    
-    @staticmethod
-    @_ensure_app_context
+    @ensure_app_context
     def get_all_votes():
         """Retrieves all votes"""
         votes = Vote.query.all()
         return [vote.to_dict() for vote in votes]
     
     @staticmethod
-    @_ensure_app_context
+    @ensure_app_context
     def get_votes_by_user(user_id):
         """Retrieves all votes made by a specific user"""
         votes = Vote.query.filter_by(vote_userid=user_id).all()
         return [vote.to_dict() for vote in votes]
     
     @staticmethod
-    @_ensure_app_context
+    @ensure_app_context
     def get_votes_by_form(form_id):
         """Retrieves all votes for a specific form"""
         votes = Vote.query.filter_by(vote_formid=form_id).all()
@@ -70,7 +55,7 @@ class VoteService:
             return {'error': f'Failed to create vote: {str(e)}'}, 500
     
     @staticmethod
-    @_ensure_app_context
+    @ensure_app_context
     def get_vote(vote_id):
         """Retrieves a vote by ID"""
         vote = Vote.query.get(vote_id)
@@ -79,7 +64,7 @@ class VoteService:
         return None
     
     @staticmethod
-    @_ensure_app_context
+    @ensure_app_context
     def delete_vote(vote_id):
         """Deletes a vote by ID"""
         vote = Vote.query.get(vote_id)
