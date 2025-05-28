@@ -1,7 +1,85 @@
 <script setup></script>
 <template>
-    <p>Welcome to the homepage of the Yétis Cactus Epiques' classmates clustering application</p>
-    <RouterLink to="/admin">See admin page</RouterLink>
-    <RouterLink to="/teacher">See teacher dashboard</RouterLink>
-    <RouterLink to="/student">See student dashboard</RouterLink>
+    <div class="home-container">
+        <h1>Clustering de Camarades</h1>
+        <p class="welcome-message">Bienvenue dans l'application de clustering de camarades des Yétis Cactus Épiques</p>
+        
+        <div class="dashboard-links">
+            <RouterLink to="/admin" class="dashboard-link admin">Administration</RouterLink>
+            <RouterLink to="/teacher" class="dashboard-link teacher">Espace professeur</RouterLink>
+            <RouterLink to="/student" class="dashboard-link student">Espace étudiant</RouterLink>
+        </div>
+    </div>
 </template>
+
+<style scoped>
+.home-container {
+  max-width: 800px;
+  margin: 40px auto;
+  padding: 30px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+h1 {
+  font-size: 2.5rem;
+  color: #2c3e50;
+  margin-bottom: 20px;
+}
+
+.welcome-message {
+  font-size: 1.2rem;
+  color: #555;
+  margin-bottom: 40px;
+}
+
+.dashboard-links {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-top: 30px;
+}
+
+.dashboard-link {
+  display: block;
+  padding: 15px;
+  border-radius: 6px;
+  color: white;
+  font-weight: bold;
+  text-decoration: none;
+  font-size: 1.1rem;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.dashboard-link:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.admin {
+  background-color: #e74c3c;
+}
+
+.teacher {
+  background-color: #3498db;
+}
+
+.student {
+  background-color: #27ae60;
+}
+
+@media (min-width: 768px) {
+  .dashboard-links {
+    flex-direction: row;
+    justify-content: center;
+    gap: 20px;
+  }
+  
+  .dashboard-link {
+    flex: 1;
+    max-width: 200px;
+  }
+}
+</style>
