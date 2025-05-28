@@ -1,27 +1,28 @@
 <script setup>
 import UserListItem from '@/components/admin/UserListItem.vue';
 import { useStudentStore } from '@/store/StudentStore';
+import { useTeacherStore } from '@/store/TeacherStore';
+
 import { useRouter } from 'vue-router';
 import { onMounted, ref } from 'vue';
 
 const router = useRouter();
+
 const studentStore = useStudentStore();
-const loading = ref(false);
-const error = ref(null);
+const teacherStore = useTeacherStore();
 
 function goToAddUser() {
     router.push({ name: 'addUser' });
 }
 
-// Charger les étudiants au montage du composant
 onMounted(async () => {
-    loading.value = true;
     try {
         console.log("Fetching students...");
+        console.log("Fetching teachers...");
         await studentStore.fetchStudents();
+        await teacherStore.fetchTeachers();
     } catch (err) {
-    } finally {
-        loading.value = false;
+      console.error("Error fetching students & teachers:", err);
     }
 });
 </script>
@@ -29,15 +30,12 @@ onMounted(async () => {
 <template>
   <h1>Admin vue</h1>
   <button @click="goToAddUser">Add Users</button>
-  
-  <div v-if="loading" class="loading">Chargement des données...</div>
-  <div v-if="error" class="error">{{ error }}</div>
-  
   <div class="lists-container">
     <ul class="half-width">
       <h1>Teachers</h1>
-      <li><UserListItem email="lucien.mousin@example.com"/></li>
-      <li><UserListItem email="benjamin.weinberg@example.com"/></li>
+      <li v-for="teacher in teacherStore.teachers" :key="teacher.id">
+        <UserListItem :email="teacher.teacher_email" />
+      </li>
     </ul>
     
     <ul class="half-width">
